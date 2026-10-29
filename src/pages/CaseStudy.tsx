@@ -10,7 +10,7 @@ export function CaseStudy() {
   const study = cases.find((item) => item.id === id);
 
   if (study?.id === "table-redesign" || study?.id === "tokyo-afterfall") {
-    return <RoommateCaseStudy study={study} />;
+    return <RoommateCaseStudy key={study.id} study={study} />;
   }
 
   return (
