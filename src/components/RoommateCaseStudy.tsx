@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { cases, type CaseStudy } from "../data/cases";
+import { posterSrc, useNearViewport, usePrefersReducedMotion } from "../lib/media";
 import { CoverMedia } from "./CoverMedia";
 
 const leadSections = [
@@ -104,17 +105,17 @@ const layouts: Record<string, StudyLayout> = {
       {
         title: "High Contrast Mode Reduces Visual Noise",
         body: "Players can enable High Contrast Mode to reduce visual noise and make gameplay elements easier to distinguish. The feature uses grayscale to mute complex game environments while highlighting characters and enemies with contrasting colors, helping players identify threats and navigate combat encounters.",
-        image: "/tokyo-high-contrast.mp4?v=2",
+        image: "/tokyo-high-contrast.mp4?v=3",
       },
       {
         title: "Scalable HUD Improves Gameplay Readability",
         body: "Players can enlarge their Heads-Up Display (HUD) to make gameplay information easier to read. By increasing the size of health bars, equipped weapon indicators, and collected currency displays, the feature aims to improve legibility for players with low vision and conditions such as presbyopia and astigmatism, helping them monitor their status during gameplay.",
-        image: "/tokyo-scalable-hud.mp4",
+        image: "/tokyo-scalable-hud.mp4?v=3",
       },
       {
         title: "Audio Cues Support Faster Reactions",
         body: "Players can enable audio cues to support faster response times during time-sensitive gameplay events. Paired with a high-visibility visual indicator, these sound-based alerts reduce reliance on visual processing and help players recognize and respond to threats, such as incoming enemy attacks.",
-        image: "/tokyo-audio-cues.mp4?v=2",
+        image: "/tokyo-audio-cues.mp4?v=3",
         sound: true,
       },
     ],
@@ -177,13 +178,13 @@ const layouts: Record<string, StudyLayout> = {
           observations: [
             {
               name: "Seren Jaye",
-              avatar: "/seren-avatar.png",
+              avatar: "/seren-avatar.webp",
               side: "left",
               body: "Seren lost her vision at seventeen and still plays games like Mario Kart. Menus and obstacles on the Nintendo Switch are difficult to navigate, and simple accessibility features would dramatically improve her experience.",
             },
             {
               name: "James Rath",
-              avatar: "/james-rath.jpg",
+              avatar: "/james-rath.webp",
               side: "right",
               body: "James consults with game studios on accessibility. He points to a high-contrast mode, like the one in Insomniac’s Spider-Man, as essential for seeing the game.",
             },
@@ -194,7 +195,7 @@ const layouts: Record<string, StudyLayout> = {
           label: "User interviews",
           title: "Listening to players with different visual needs.",
           body: "I conducted semi-structured interviews with 4 active gamers with visual impairments to understand how their visual needs shape handheld gameplay and where existing accessibility features fall short. I synthesized responses through affinity mapping to identify recurring patterns.",
-          image: "/user-interviews-affinity.png?v=3",
+          image: "/user-interviews-affinity.webp",
         },
         {
           id: "findings",
@@ -234,27 +235,60 @@ const layouts: Record<string, StudyLayout> = {
 const solutionVideo = /\.(mov|mp4|webm|m4v)(\?.*)?$/i;
 
 function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; sound?: boolean }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoRef, near] = useNearViewport<HTMLVideoElement>("480px");
+  const reduce = usePrefersReducedMotion();
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [requested, setRequested] = useState(false);
+  const loadVideo = near && (!reduce || requested);
+
+  useEffect(() => {
+    if (reduce) setPaused(true);
+  }, [reduce]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    video.muted = true;
-    setMuted(true);
     const onPlay = () => setPaused(false);
     const onPause = () => setPaused(true);
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
-    void video.play().catch(() => setPaused(true));
+    if (!loadVideo) {
+      if (video.dataset.src) {
+        delete video.dataset.src;
+        video.removeAttribute("src");
+        video.load();
+      }
+      return () => {
+        video.removeEventListener("play", onPlay);
+        video.removeEventListener("pause", onPause);
+      };
+    }
+    video.preload = "auto";
+    video.muted = true;
+    setMuted(true);
+    if (video.dataset.src !== src) {
+      video.dataset.src = src;
+      video.src = src;
+    }
+    const play = () => void video.play().catch(() => setPaused(true));
+    if (!reduce || requested) {
+      if (video.readyState >= 2) play();
+      else video.addEventListener("loadeddata", play, { once: true });
+    }
     return () => {
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
+      video.removeEventListener("loadeddata", play);
     };
-  }, [src]);
+  }, [src, loadVideo, reduce, requested, videoRef]);
 
   const togglePlayback = () => {
+    if (!loadVideo) {
+      setRequested(true);
+      setPaused(false);
+      return;
+    }
     const video = videoRef.current;
     if (!video) return;
     if (video.paused) void video.play();
@@ -273,13 +307,13 @@ function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; so
     <figure className="cs-clip relative m-0 overflow-hidden rounded-lg">
       <video
         ref={videoRef}
-        src={src}
+        poster={posterSrc(src)}
         className="aspect-video w-full object-cover"
-        autoPlay
+        autoPlay={!reduce}
         loop
         muted={muted}
         playsInline
-        preload="auto"
+        preload="none"
         aria-label={alt}
       />
       <div className="cs-clip-controls" data-open={paused || (sound && !muted) ? "true" : undefined}>
@@ -317,7 +351,7 @@ function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; so
 
 const competitorLogos = {
   mario: "/competitors/mario-odyssey.webp",
-  smash: "/competitors/smash-bros.jpg",
+  smash: "/competitors/smash-bros.webp",
   botw: "/competitors/breath-of-the-wild.webp",
 } as const;
 
@@ -332,7 +366,15 @@ function CompetitorLogo({ logo }: { logo: "switch" | "mario" | "smash" | "botw" 
       </svg>
     );
   }
-  return <img src={competitorLogos[logo]} alt="" className={`cs-competitor-logo cs-competitor-logo-${logo}`} />;
+  return (
+    <img
+      src={competitorLogos[logo]}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      className={`cs-competitor-logo cs-competitor-logo-${logo}`}
+    />
+  );
 }
 
 function InsightSnap({ kind }: { kind: "contrast" | "hud" | "color" | "audio" }) {
@@ -384,7 +426,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
   ];
   const [active, setActive] = useState(pageSections[0].id);
   const next = cases.filter((item) => item.id !== study.id);
-  const visual = study.id === "tokyo-afterfall" && study.cover ? study.cover : study.image;
+  const visual = study.hero ?? (study.id === "tokyo-afterfall" && study.cover ? study.cover : study.image);
 
   useEffect(() => {
     const observedIds = [
@@ -615,6 +657,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                         src={item.image}
                         alt="Tokyo Afterfall title screen on a handheld console"
                         className="aspect-video w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </figure>
                   )
@@ -650,6 +694,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                     src={group.image}
                     alt="Affinity map of interview notes grouped by visual impairment, preferred gaming method, pain points, and solutions."
                     className="mt-8 w-full"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : null}
                 {group.observations ? (
@@ -665,6 +711,10 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                             <img
                               src={observation.avatar}
                               alt=""
+                              width={40}
+                              height={40}
+                              loading="lazy"
+                              decoding="async"
                               className="h-10 w-10 shrink-0 rounded-full object-cover"
                             />
                             <p className="m-0 max-w-[560px] rounded-2xl bg-[#eceae6] px-5 py-4 font-sans text-[16px] leading-[1.55] text-[#3f3a34]">
@@ -738,7 +788,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
           </h2>
           <p className="mb-6 font-sans text-[17px] leading-[1.65] text-[#404040]">{study.desc}</p>
           {study.id === "tokyo-afterfall" ? (
-            <LoopingClip src="/tokyo-prototype.mp4" alt={study.title} />
+            <LoopingClip src="/tokyo-prototype.mp4?v=2" alt={study.title} />
           ) : (
             <figure className="m-0">
               <CoverMedia src={visual} alt={study.title} className="w-full rounded-2xl" />
@@ -769,10 +819,15 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 to={`/case/${item.id}`}
                 className="flex flex-col rounded-[16px] bg-white/55 p-2 text-inherit no-underline shadow-[0_1px_8px_rgba(0,0,0,0.05)] backdrop-blur-md transition hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(0,0,0,0.09)]"
               >
-                <div
-                  className="aspect-video w-full rounded-lg bg-cover bg-center"
-                  style={{ backgroundImage: `url(${item.image})` }}
-                />
+                <div className="aspect-video w-full overflow-hidden rounded-lg">
+                  <img
+                    src={item.image}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
                 <div className="flex flex-col gap-3 px-3.5 pb-3 pt-4">
                   <span className="font-sans text-[15px] font-medium">{item.client}</span>
                   <span className="font-sans text-[26px] font-medium leading-[1.1] tracking-[-0.03em]">{item.title}</span>

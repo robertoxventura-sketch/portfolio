@@ -5,8 +5,47 @@ import { FolderDock } from "../components/FolderDock";
 import { Header } from "../components/Header";
 import { Hero } from "../components/Hero";
 import { ProfilePanel } from "../components/ProfilePanel";
+import { cases } from "../data/cases";
+import { isVideoSrc, posterSrc, usePrefersReducedMotion } from "../lib/media";
 
 type HomeView = "hero" | "hero-leaving" | "works" | "works-leaving" | "profile";
+
+function CoverPreload() {
+  const reduce = usePrefersReducedMotion();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const win = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (win.requestIdleCallback) {
+      const id = win.requestIdleCallback(() => setReady(true), { timeout: 900 });
+      return () => win.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(() => setReady(true), 500);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  if (!ready) return null;
+
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute left-0 top-0 -z-10 h-px w-px overflow-hidden opacity-0">
+      {cases.map((item) => {
+        const src = item.cover ?? item.image;
+        if (!isVideoSrc(src)) {
+          return <img key={item.id} src={src} alt="" decoding="async" />;
+        }
+        return (
+          <span key={item.id}>
+            <img src={posterSrc(src)} alt="" decoding="async" />
+            {reduce ? null : <video src={src} poster={posterSrc(src)} preload="auto" muted playsInline />}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
 function viewFromLocation(state: unknown): HomeView {
   const requested = (state as { view?: string } | null)?.view;
@@ -149,6 +188,7 @@ export function Home() {
   return (
     <div className="relative isolate min-h-screen bg-background text-foreground overflow-x-clip">
       <Header />
+      <CoverPreload />
 
       {(view === "hero" || view === "hero-leaving") && (
         <div

@@ -14,8 +14,11 @@ export function ProfilePanel() {
     <section className="flex min-h-dvh flex-col items-center justify-center px-6 pb-36 pt-28 text-center">
       <div className="mb-8 h-36 w-36 overflow-hidden rounded-[28px] bg-[#c8d9f0] shadow-[0_10px_36px_rgba(0,0,0,0.08)] sm:h-44 sm:w-44">
         <img
-          src="/nav/profile-mii.png?v=2"
+          src="/nav/profile-mii.webp"
           alt="Roberto Ventura as a Mii-style avatar"
+          width={512}
+          height={512}
+          decoding="async"
           className="h-full w-full object-cover object-center"
         />
       </div>

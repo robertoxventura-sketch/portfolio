@@ -1,4 +1,5 @@
-const videoExt = /\.(mov|mp4|webm)$/i;
+import { useEffect } from "react";
+import { isVideoSrc, posterSrc, useNearViewport, usePrefersReducedMotion } from "../lib/media";
 
 export function CoverMedia({
   src,
@@ -9,25 +10,48 @@ export function CoverMedia({
   alt?: string;
   className?: string;
 }) {
-  if (videoExt.test(src)) {
+  const [ref, near] = useNearViewport<HTMLVideoElement>();
+  const reduce = usePrefersReducedMotion();
+  const loadVideo = near && !reduce;
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    if (!loadVideo) {
+      if (video.dataset.src) {
+        delete video.dataset.src;
+        video.removeAttribute("src");
+        video.load();
+      }
+      return;
+    }
+    video.preload = "auto";
+    video.muted = true;
+    if (video.dataset.src !== src) {
+      video.dataset.src = src;
+      video.src = src;
+    }
+    const play = () => void video.play().catch(() => {});
+    if (video.readyState >= 2) play();
+    else video.addEventListener("loadeddata", play, { once: true });
+    return () => video.removeEventListener("loadeddata", play);
+  }, [loadVideo, ref, src]);
+
+  if (isVideoSrc(src)) {
     return (
       <video
-        src={src}
+        ref={ref}
+        poster={posterSrc(src)}
         className={className}
         autoPlay
         loop
         muted
         playsInline
-        preload="auto"
+        preload="none"
         aria-label={alt || undefined}
-        ref={(node) => {
-          if (!node) return;
-          node.muted = true;
-          void node.play().catch(() => {});
-        }}
       />
     );
   }
 
-  return <img src={src} alt={alt} className={className} />;
+  return <img src={src} alt={alt} className={className} loading="lazy" decoding="async" />;
 }

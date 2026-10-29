@@ -32,7 +32,7 @@ export function CaseStudy() {
               {study.desc}
             </p>
             <div className="mt-10 overflow-hidden rounded-3xl bg-secondary">
-              <img src={study.image} alt={study.title} className="h-auto w-full" />
+              <img src={study.image} alt={study.title} className="h-auto w-full" decoding="async" />
             </div>
           </>
         ) : (

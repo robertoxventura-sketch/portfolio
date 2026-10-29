@@ -94,19 +94,19 @@ export function FolderDock({
     >
       <div className="pointer-events-auto flex items-end gap-3.5 rounded-[26px] border border-white/55 bg-white/45 px-4 pb-[7px] pt-[9px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.05),0_1px_3px_rgba(0,0,0,0.05),0_10px_36px_rgba(0,0,0,0.08),inset_0_1.5px_1px_rgba(255,255,255,0.9)] backdrop-blur-[24px] backdrop-saturate-150">
         <DockItem label="Work" active={active === "works"} onClick={onWorks}>
-          <img src="/nav/icon-work.png" alt="" className={iconClass} />
+          <img src="/nav/icon-work.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
         <DockItem label="Resume" href={RESUME_HREF}>
-          <img src="/nav/icon-resume.png" alt="" className={iconClass} />
+          <img src="/nav/icon-resume.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
         <DockItem label="LinkedIn" href={LINKEDIN_HREF}>
-          <img src="/nav/icon-linkedin.png" alt="" className={iconClass} />
+          <img src="/nav/icon-linkedin.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
         <DockItem label="Email" href={CONTACT_HREF}>
-          <img src="/nav/icon-email.png" alt="" className={iconClass} />
+          <img src="/nav/icon-email.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
         <DockItem label="Profile" active={active === "profile"} onClick={onProfile}>
-          <img src="/nav/icon-profile.png" alt="" className={iconClass} />
+          <img src="/nav/icon-profile.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
       </div>
     </nav>
