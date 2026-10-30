@@ -37,7 +37,7 @@ type StudyLayout = {
       image?: string;
       observations?: { name: string; body: string; avatar: string; side: "left" | "right" }[];
       insights?: { title: string; body: string; visual: "contrast" | "hud" | "color" | "audio" }[];
-      competitors?: { name: string; logo: "switch" | "mario" | "smash" | "botw"; body: string; features: string[]; limitations: string[] }[];
+      competitors?: { name: string; cover: string; body: string; features: string[]; limitations: string[] }[];
     }[];
   };
   finalTitle: string;
@@ -128,7 +128,7 @@ const layouts: Record<string, StudyLayout> = {
           competitors: [
             {
               name: "Nintendo Switch",
-              logo: "switch",
+              cover: "/competitors/switch-cover.png",
               body: "The Nintendo Switch offers limited system-level accessibility settings that can be used during gameplay.",
               features: ["Display Color Customization", "Screen Zoom"],
               limitations: [
@@ -138,8 +138,19 @@ const layouts: Record<string, StudyLayout> = {
               ],
             },
             {
+              name: "The Legend of Zelda: Breath of the Wild",
+              cover: "/competitors/breath-of-the-wild-cover.png",
+              body: "Breath of the Wild offers HUD customization and audio cues to help players perceive gameplay information.",
+              features: ["Normal / Pro HUD Modes", "Audio Cues"],
+              limitations: [
+                "Pro HUD reduces visual clutter by hiding nonessential HUD elements, but does not allow players to resize individual interface elements.",
+                "Audio cues support navigation and provide some combat feedback, but are not consistently available.",
+                "No additional settings are available to customize visual accessibility.",
+              ],
+            },
+            {
               name: "Super Mario Odyssey",
-              logo: "mario",
+              cover: "/competitors/mario-odyssey-cover.jpg",
               body: "Super Mario Odyssey offers Assist Mode to reduce gameplay difficulty through additional guidance and support.",
               features: ["Assist Mode"],
               limitations: [
@@ -149,23 +160,12 @@ const layouts: Record<string, StudyLayout> = {
             },
             {
               name: "Super Smash Bros. Ultimate",
-              logo: "smash",
+              cover: "/competitors/smash-bros-cover.jpg",
               body: "Super Smash Bros. Ultimate offers visual indicators to help players identify characters during combat.",
               features: ["Team Highlight"],
               limitations: [
                 "Team Highlight is limited to team-based matches and does not provide consistent character highlighting across all game modes.",
                 "No additional visual accessibility features are available.",
-              ],
-            },
-            {
-              name: "The Legend of Zelda: Breath of the Wild",
-              logo: "botw",
-              body: "Breath of the Wild offers HUD customization and audio cues to help players perceive gameplay information.",
-              features: ["Normal / Pro HUD Modes", "Audio Cues"],
-              limitations: [
-                "Pro HUD reduces visual clutter by hiding nonessential HUD elements, but does not allow players to resize individual interface elements.",
-                "Audio cues support navigation and provide some combat feedback, but are not consistently available.",
-                "No additional settings are available to customize visual accessibility.",
               ],
             },
           ],
@@ -349,34 +349,6 @@ function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; so
   );
 }
 
-const competitorLogos = {
-  mario: "/competitors/mario-odyssey.webp",
-  smash: "/competitors/smash-bros.webp",
-  botw: "/competitors/breath-of-the-wild.webp",
-} as const;
-
-function CompetitorLogo({ logo }: { logo: "switch" | "mario" | "smash" | "botw" }) {
-  if (logo === "switch") {
-    return (
-      <svg className="cs-competitor-logo cs-competitor-logo-switch" viewBox="0 0 42 45" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M24.808 45H31.237C37.145 45 42 39.799 42 33.469V11.531C42 5.203 37.145 0 31.237 0H24.675C24.545 0 24.412.139 24.412.281v44.438C24.411 44.861 24.544 45 24.808 45ZM32.813 20.252c2.364 0 4.198 2.109 4.198 4.496 0 2.535-1.969 4.5-4.198 4.5-2.363 0-4.2-1.967-4.2-4.5-.132-2.529 1.837-4.496 4.2-4.496ZM19.95 0H10.762C4.856 0 0 5.203 0 11.531v21.938C0 39.799 4.856 45 10.762 45h9.188c.129 0 .263-.139.263-.279V.281C20.214.139 20.081 0 19.95 0Zm-3.017 41.346H10.763c-1.951.003-3.823-.826-5.203-2.304C4.181 37.564 3.407 35.559 3.411 33.469V11.531c-.004-2.09.77-4.095 2.149-5.573C6.94 4.48 8.812 3.651 10.763 3.654H16.8v37.692ZM6.563 13.498c0 2.391 1.706 4.219 3.937 4.219s3.938-1.828 3.938-4.219-1.707-4.219-3.938-4.219-3.937 1.828-3.937 4.219Z"
-        />
-      </svg>
-    );
-  }
-  return (
-    <img
-      src={competitorLogos[logo]}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      className={`cs-competitor-logo cs-competitor-logo-${logo}`}
-    />
-  );
-}
-
 function InsightSnap({ kind }: { kind: "contrast" | "hud" | "color" | "audio" }) {
   if (kind === "contrast") {
     return (
@@ -460,18 +432,37 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         Roberto Ventura
       </Link>
 
-      <aside className="fixed left-10 top-[112px] z-40 hidden w-[180px] min-[1280px]:block">
+      <aside className={`${study.id === "tokyo-afterfall" ? "cs-tokyo-rail " : ""}fixed left-10 top-[112px] z-40 hidden w-[180px] min-[1280px]:block`}>
         <Link
           to="/"
           state={{ view: "works" }}
-          className="mb-8 inline-flex items-center gap-1 rounded-full border border-[#e4e4e4] bg-white px-3 py-1.5 font-sans text-[13px] text-[#1e1a15] shadow-sm"
+          className={
+            study.id === "tokyo-afterfall"
+              ? "cs-tokyo-back"
+              : "mb-8 inline-flex items-center gap-1 rounded-full border border-[#e4e4e4] bg-white px-3 py-1.5 font-sans text-[13px] text-[#1e1a15] shadow-sm"
+          }
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          {study.id === "tokyo-afterfall" ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          )}
           Back
         </Link>
-        <nav className="flex flex-col" aria-label="Case study sections">
+        {study.id === "tokyo-afterfall" ? (
+          <>
+            <p className="cs-tokyo-rail-title">{study.client}</p>
+            <p className="cs-tokyo-rail-note">{study.title}</p>
+          </>
+        ) : null}
+        <nav className={study.id === "tokyo-afterfall" ? "cs-tokyo-toc" : "flex flex-col"} aria-label="Case study sections">
+          {study.id === "tokyo-afterfall" ? <span className="cs-tokyo-toc-track" aria-hidden="true" /> : null}
+          <div className={study.id === "tokyo-afterfall" ? "cs-tokyo-toc-links" : "contents"}>
           {pageSections.map((section) => {
             const researchOpen =
               section.id === "research" &&
@@ -481,14 +472,20 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
               <a
                 key={section.id}
                 href={`#${section.id}`}
-                className={`py-1.5 font-sans text-[15px] tracking-normal no-underline transition-colors ${
-                  isActive ? "font-medium text-[#1e1a15]" : "text-[#b0b0b0] hover:text-[#1e1a15]"
-                }`}
+                aria-current={isActive ? "location" : undefined}
+                className={
+                  study.id === "tokyo-afterfall"
+                    ? "cs-tokyo-toc-link"
+                    : `py-1.5 font-sans text-[15px] tracking-normal no-underline transition-colors ${
+                        isActive ? "font-medium text-[#1e1a15]" : "text-[#b0b0b0] hover:text-[#1e1a15]"
+                      }`
+                }
               >
                 {section.label}
               </a>
             );
           })}
+          </div>
         </nav>
       </aside>
 
@@ -497,31 +494,30 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         <CoverMedia src={visual} className="aspect-video w-full object-cover" />
       </div>
       {study.id === "tokyo-afterfall" ? (
-        <h1 className="cs-tokyo-open-title">Accessibility Features for Visually Impaired Players</h1>
+        <header className="cs-tokyo-open">
+          <p className="cs-tokyo-kicker">Tokyo Afterfall</p>
+          <h1 className="cs-tokyo-open-title">Accessibility Features for Visually Impaired Players</h1>
+          <dl className="cs-tokyo-facts">
+            <div>
+              <dt>Timeline</dt>
+              <dd>2 Weeks</dd>
+            </div>
+            <div>
+              <dt>Role</dt>
+              <dd>Product Designer</dd>
+            </div>
+            <div>
+              <dt>Type</dt>
+              <dd>Personal Project</dd>
+            </div>
+            <div>
+              <dt>Team</dt>
+              <dd>Solo</dd>
+            </div>
+          </dl>
+        </header>
       ) : null}
       <main className="cs-scroll-body mx-auto pb-28">
-        {study.id === "tokyo-afterfall" ? (
-          <header className="cs-tokyo-open">
-            <dl className="cs-tokyo-facts">
-              <div>
-                <dt>Type</dt>
-                <dd>Personal Project</dd>
-              </div>
-              <div>
-                <dt>Role</dt>
-                <dd>Product Designer</dd>
-              </div>
-              <div>
-                <dt>Timeline</dt>
-                <dd>2 Weeks</dd>
-              </div>
-              <div>
-                <dt>Team</dt>
-                <dd>Solo</dd>
-              </div>
-            </dl>
-          </header>
-        ) : null}
         {study.id === "tokyo-afterfall" ? null : (
         <header className="mb-[72px]">
           <p className="mb-5 font-sans text-[17px] font-semibold tracking-[-0.01em] text-[#1e1a15]">
@@ -727,26 +723,29 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                   </ul>
                 ) : null}
                 {group.competitors ? (
-                  <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2">
+                  <ul className="cs-audit-grid">
                     {group.competitors.map((competitor) => (
-                      <li
-                        key={competitor.name}
-                        className="flex flex-col gap-3.5 rounded-xl border border-[#1e1a15]/[0.08] bg-white px-3 pb-4 pt-3"
-                      >
-                        <div className="flex h-[120px] items-center justify-center overflow-hidden rounded-lg bg-[#f7f7f5] px-4 py-[18px]">
-                          <CompetitorLogo logo={competitor.logo} />
+                      <li key={competitor.name} className="cs-audit-card">
+                        <div>
+                          <h3>{competitor.name}</h3>
+                          <p>{competitor.body}</p>
                         </div>
-                        <div className="px-3 pb-2">
-                          <p className="mb-2 font-sans text-[16px] font-semibold leading-[1.3] text-[#1e1a15]">{competitor.name}</p>
-                          <p className="m-0 font-sans text-[16px] leading-[1.55] text-[#404040]">{competitor.body}</p>
-                          <p className="mb-1 mt-4 font-sans text-[16px] font-semibold leading-[1.3] text-[#1e1a15]">✅ Relevant Accessibility Features</p>
-                          <ul className="m-0 list-disc pl-5 font-sans text-[16px] leading-[1.55] text-[#404040]">
+                        <img
+                          src={competitor.cover}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="cs-audit-cover"
+                        />
+                        <div className="cs-audit-foot">
+                          <h3>Relevant Accessibility Features</h3>
+                          <ul>
                             {competitor.features.map((feature) => (
                               <li key={feature}>{feature}</li>
                             ))}
                           </ul>
-                          <p className="mb-1 mt-4 font-sans text-[16px] font-semibold leading-[1.3] text-[#1e1a15]">❌ Limitations</p>
-                          <ul className="m-0 list-disc pl-5 font-sans text-[16px] leading-[1.55] text-[#404040]">
+                          <h3>Limitations</h3>
+                          <ul>
                             {competitor.limitations.map((limitation) => (
                               <li key={limitation}>{limitation}</li>
                             ))}
