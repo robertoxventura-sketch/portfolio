@@ -1,12 +1,11 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { FolderDock } from "../components/FolderDock";
+import { Link, useParams } from "react-router-dom";
+import { CaseStudyDock } from "../components/FolderDock";
 import { Header } from "../components/Header";
 import { RoommateCaseStudy } from "../components/RoommateCaseStudy";
 import { cases } from "../data/cases";
 
 export function CaseStudy() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const study = cases.find((item) => item.id === id);
 
   if (study?.id === "table-redesign" || study?.id === "tokyo-afterfall") {
@@ -39,11 +38,7 @@ export function CaseStudy() {
           <h1 className="mt-10 font-display text-display-sm">Case study not found.</h1>
         )}
       </main>
-      <FolderDock
-        active={null}
-        onWorks={() => navigate("/", { state: { view: "works" } })}
-        onProfile={() => navigate("/", { state: { view: "profile" } })}
-      />
+      <CaseStudyDock />
     </div>
   );
 }

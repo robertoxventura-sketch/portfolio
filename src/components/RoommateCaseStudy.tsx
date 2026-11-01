@@ -1,8 +1,9 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { cases, type CaseStudy } from "../data/cases";
 import { posterSrc, useNearViewport, usePrefersReducedMotion } from "../lib/media";
 import { CoverMedia } from "./CoverMedia";
+import { CaseStudyDock } from "./FolderDock";
 
 const leadSections = [
   { id: "overview", label: "Overview" },
@@ -248,13 +249,25 @@ const layouts: Record<string, StudyLayout> = {
 
 const solutionVideo = /\.(mov|mp4|webm|m4v)(\?.*)?$/i;
 
-function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; sound?: boolean }) {
+function LoopingClip({
+  src,
+  alt,
+  sound = false,
+  active = true,
+}: {
+  src: string;
+  alt: string;
+  sound?: boolean;
+  active?: boolean;
+}) {
   const [videoRef, near] = useNearViewport<HTMLVideoElement>("480px");
   const reduce = usePrefersReducedMotion();
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [requested, setRequested] = useState(false);
   const loadVideo = near && (!reduce || requested);
+  const activeRef = useRef(active);
+  activeRef.current = active;
 
   useEffect(() => {
     if (reduce) setPaused(true);
@@ -285,7 +298,10 @@ function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; so
       video.dataset.src = src;
       video.src = src;
     }
-    const play = () => void video.play().catch(() => setPaused(true));
+    const play = () => {
+      if (!activeRef.current) return;
+      void video.play().catch(() => setPaused(true));
+    };
     if (!reduce || requested) {
       if (video.readyState >= 2) play();
       else video.addEventListener("loadeddata", play, { once: true });
@@ -296,6 +312,17 @@ function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; so
       video.removeEventListener("loadeddata", play);
     };
   }, [src, loadVideo, reduce, requested, videoRef]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !loadVideo) return;
+    if (!active) {
+      video.pause();
+      return;
+    }
+    if (reduce && !requested) return;
+    void video.play().catch(() => setPaused(true));
+  }, [active, loadVideo, reduce, requested, videoRef]);
 
   const togglePlayback = () => {
     if (!loadVideo) {
@@ -331,6 +358,18 @@ function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; so
         aria-label={alt}
       />
       <div className="cs-clip-controls" data-open={paused || (sound && !muted) ? "true" : undefined}>
+        <button type="button" className="cs-clip-btn" aria-label={paused ? "Play video" : "Pause video"} aria-pressed={paused} onClick={togglePlayback}>
+          {paused ? (
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
+            </svg>
+          )}
+        </button>
         {sound ? (
           <button type="button" className="cs-clip-btn" aria-label={muted ? "Unmute video" : "Mute video"} aria-pressed={!muted} onClick={toggleMuted}>
             {muted ? (
@@ -346,20 +385,139 @@ function LoopingClip({ src, alt, sound = false }: { src: string; alt: string; so
             )}
           </button>
         ) : null}
-        <button type="button" className="cs-clip-btn" aria-label={paused ? "Play video" : "Pause video"} aria-pressed={paused} onClick={togglePlayback}>
-          {paused ? (
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <rect x="6" y="5" width="4" height="14" rx="1" />
-              <rect x="14" y="5" width="4" height="14" rx="1" />
-            </svg>
-          )}
-        </button>
       </div>
     </figure>
+  );
+}
+
+function SolutionArrow({
+  direction,
+  label,
+  onClick,
+}: {
+  direction: "previous" | "next";
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`absolute top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border-0 bg-white p-0 text-[#151515] shadow-[0_4px_18px_rgba(21,21,21,0.12)] transition-transform duration-150 hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e1a15] ${direction === "previous" ? "-left-[52px]" : "-right-[52px]"}`}
+      aria-label={label}
+      onClick={onClick}
+    >
+      <svg className="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d={direction === "previous" ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+        />
+      </svg>
+    </button>
+  );
+}
+
+function SolutionCarousel({ items }: { items: NonNullable<StudyLayout["solutions"]> }) {
+  const [index, setIndex] = useState(0);
+  const reduce = usePrefersReducedMotion();
+  const count = items.length;
+  const item = items[index] ?? items[0];
+
+  const go = (nextIndex: number) => {
+    setIndex(Math.min(count - 1, Math.max(0, nextIndex)));
+  };
+
+  if (!item) return null;
+
+  return (
+    <div
+      onKeyDown={(event) => {
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          go(index + 1);
+        } else if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          go(index - 1);
+        }
+      }}
+    >
+      <div aria-live="polite" aria-atomic="true">
+        <div key={item.title} className="solution-copy">
+          <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
+            {item.title}
+          </h2>
+          <p className="mb-10 font-sans text-[17px] leading-[1.65] text-[#404040]">{item.body}</p>
+        </div>
+      </div>
+      <div className="relative">
+        <div className="overflow-hidden rounded-xl">
+          <div
+            className="flex w-full"
+            style={{
+              transform: `translateX(-${index * 100}%)`,
+              transition: reduce ? undefined : "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          >
+            {items.map((slide, slideIndex) => (
+              <div
+                key={slide.title}
+                className="w-full shrink-0"
+                aria-hidden={slideIndex !== index}
+                inert={slideIndex !== index}
+              >
+                {slide.image ? (
+                  solutionVideo.test(slide.image) ? (
+                    <LoopingClip
+                      src={slide.image}
+                      alt={`${slide.title} in Tokyo Afterfall`}
+                      sound={slide.sound}
+                      active={slideIndex === index}
+                    />
+                  ) : (
+                    <figure className="m-0 overflow-hidden">
+                      <img
+                        src={slide.image}
+                        alt={slide.title}
+                        className="aspect-video w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </figure>
+                  )
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+        {count > 1 && index > 0 ? (
+          <SolutionArrow direction="previous" label="Previous solution" onClick={() => go(index - 1)} />
+        ) : null}
+        {count > 1 && index < count - 1 ? (
+          <SolutionArrow direction="next" label="Next solution" onClick={() => go(index + 1)} />
+        ) : null}
+      </div>
+      {count > 1 ? (
+        <div className="mt-3 flex items-center justify-center" role="group" aria-label="Choose solution">
+          {items.map((slide, slideIndex) => (
+            <button
+              key={slide.title}
+              type="button"
+              className="grid h-6 w-4 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e1a15]"
+              aria-label={`Show solution ${slideIndex + 1}: ${slide.title}`}
+              aria-current={slideIndex === index ? "true" : undefined}
+              onClick={() => go(slideIndex)}
+            >
+              <span
+                aria-hidden="true"
+                className={`size-1.5 rounded-full transition-colors duration-150 ${slideIndex === index ? "bg-[#151515]" : "bg-[#878787]"}`}
+              />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -415,6 +573,15 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
   const visual = study.hero ?? (study.id === "tokyo-afterfall" && study.cover ? study.cover : study.image);
 
   useEffect(() => {
+    if (study.id !== "tokyo-afterfall") return;
+    const previous = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = "#ffffff";
+    return () => {
+      document.body.style.backgroundColor = previous;
+    };
+  }, [study.id]);
+
+  useEffect(() => {
     const observedIds = [
       ...pageSections.map((section) => section.id),
       ...(layout?.research?.groups.map((group) => group.id) ?? []),
@@ -438,7 +605,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
   if (!layout) return null;
 
   return (
-    <div className={`min-h-screen bg-[#f7f7f5] text-[#1e1a15] ${study.id === "tokyo-afterfall" ? "cs-tokyo" : ""}`}>
+    <div className={`min-h-screen ${study.id === "tokyo-afterfall" ? "cs-tokyo bg-white text-[#1e1a15]" : "bg-[#f7f7f5] text-[#1e1a15]"}`}>
       <Link
         to="/"
         className="fixed left-0 right-0 top-0 z-50 px-7 py-[18px] font-display text-[17px] tracking-tight text-[#1e1a15] sm:px-12"
@@ -652,29 +819,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
             <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "solution" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
               Solution
             </p>
-            {layout.solutions.map((item, index) => (
-              <div key={`${item.title}-${index}`} className={index > 0 ? "mt-28" : undefined}>
-                <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
-                  {item.title}
-                </h2>
-                <p className="mb-10 font-sans text-[17px] leading-[1.65] text-[#404040]">{item.body}</p>
-                {item.image ? (
-                  solutionVideo.test(item.image) ? (
-                    <LoopingClip src={item.image} alt={`${item.title} in Tokyo Afterfall`} sound={item.sound} />
-                  ) : (
-                    <figure className="m-0 overflow-hidden rounded-lg">
-                      <img
-                        src={item.image}
-                        alt="Tokyo Afterfall title screen on a handheld console"
-                        className="aspect-video w-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </figure>
-                  )
-                ) : null}
-              </div>
-            ))}
+            <SolutionCarousel items={layout.solutions} />
           </section>
         ) : null}
 
@@ -853,6 +998,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         </div>
       </main>
       </div>
+      <CaseStudyDock />
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export type DockSection = "works" | "profile";
 
@@ -110,5 +111,110 @@ export function FolderDock({
         </DockItem>
       </div>
     </nav>
+  );
+}
+
+function useScrolledPast(threshold: number) {
+  const [past, setPast] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const next = window.scrollY > threshold;
+      setPast((current) => (current === next ? current : next));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [threshold]);
+
+  return past;
+}
+
+const miniIconClass = "block h-8 w-auto max-w-9 object-contain drop-shadow-[1px_2px_2px_#DEDEDE]";
+
+function MiniDockItem({
+  label,
+  icon,
+  href,
+  onClick,
+}: {
+  label: string;
+  icon: string;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const reduceMotion = useReducedMotion();
+  const className =
+    "group relative grid size-11 place-items-center rounded-[12px] text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e1a15]";
+  const body = (
+    <>
+      <motion.img
+        src={icon}
+        alt=""
+        width={256}
+        height={256}
+        decoding="async"
+        className={miniIconClass}
+        whileHover={reduceMotion ? undefined : { y: -4, scale: 1.12 }}
+        transition={iconSpring}
+      />
+      <span className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1e1a15] px-2 py-1 font-sans text-[11px] font-medium leading-none text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+        {label}
+      </span>
+    </>
+  );
+
+  if (href) {
+    const external = href.startsWith("http");
+    return (
+      <a
+        href={href}
+        aria-label={label}
+        className={className}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
+        {body}
+      </a>
+    );
+  }
+
+  return (
+    <button type="button" aria-label={label} onClick={onClick} className={className}>
+      {body}
+    </button>
+  );
+}
+
+export function CaseStudyDock() {
+  const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
+  const visible = useScrolledPast(72);
+
+  return (
+    <div className="pointer-events-none fixed inset-x-0 bottom-5 z-50 flex justify-center px-4 pb-[env(safe-area-inset-bottom)]">
+      <motion.nav
+        aria-label="Sections"
+        aria-hidden={!visible}
+        {...(!visible ? { inert: true } : {})}
+        initial={false}
+        animate={visible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 18, scale: 0.96 }}
+        transition={
+          reduceMotion
+            ? { duration: 0 }
+            : visible
+              ? { type: "spring", stiffness: 340, damping: 26 }
+              : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }
+        }
+        className={`flex items-end gap-1 rounded-[22px] border border-white/70 bg-white/80 px-2.5 py-1.5 shadow-[0_0_0_1px_rgba(30,26,21,0.06),0_8px_24px_rgba(30,26,21,0.1)] backdrop-blur-[16px] ${
+          visible ? "pointer-events-auto" : ""
+        }`}
+      >
+        <MiniDockItem label="Work" icon="/nav/icon-work.webp" onClick={() => navigate("/", { state: { view: "works" } })} />
+        <MiniDockItem label="Resume" icon="/nav/icon-resume.webp" href={RESUME_HREF} />
+        <MiniDockItem label="LinkedIn" icon="/nav/icon-linkedin.webp" href={LINKEDIN_HREF} />
+        <MiniDockItem label="Email" icon="/nav/icon-email.webp" href={CONTACT_HREF} />
+        <MiniDockItem label="Profile" icon="/nav/icon-profile.webp" onClick={() => navigate("/", { state: { view: "profile" } })} />
+      </motion.nav>
+    </div>
   );
 }
