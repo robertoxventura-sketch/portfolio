@@ -197,13 +197,15 @@ body {
   align-items: stretch;
   width: 100%;
   min-width: 0;
-  padding-inline: 16px;
+  padding: var(--cs-top) 16px 0;
   box-sizing: border-box;
 }
 
 .cs-tokyo {
-  --cs-display: Switzer, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --cs-text: Switzer, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --cs-sans: -apple-system, system-ui, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --cs-display: var(--cs-sans);
+  --cs-text: var(--cs-sans);
+  --cs-top: 80px;
 }
 
 .cs-tokyo .font-sans,
@@ -329,6 +331,103 @@ body {
 @media (min-width: 720px) {
   .cs-audit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cs-watch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.cs-watch-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: #f0e6d4;
+  color: #1c1a16;
+  font-family: var(--cs-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background 200ms, color 200ms;
+}
+
+.cs-watch-link svg {
+  flex: none;
+}
+
+.cs-watch-link:hover,
+.cs-watch-link:focus-visible {
+  background: #1f1d1a;
+  color: #fbf8f1;
+}
+
+.cs-note-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cs-note-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  margin: 0;
+  padding: 24px;
+  border: 1px solid rgba(30, 26, 21, 0.08);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.cs-tokyo #research .cs-note-card h3 {
+  margin: 12px 0 0;
+  color: #1e1a15;
+  font-family: var(--cs-display);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.4;
+}
+
+.cs-tokyo #research .cs-note-index,
+.cs-tokyo #research .cs-note-card p {
+  margin: 0;
+  font-family: var(--cs-text);
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.5;
+}
+
+.cs-tokyo #research .cs-note-index {
+  color: rgba(30, 26, 21, 0.62);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.cs-tokyo #research .cs-note-card > p:not(.cs-note-index) {
+  margin-top: 6px;
+  color: rgba(30, 26, 21, 0.62);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+@container (min-width: 720px) {
+  .cs-note-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -584,11 +683,12 @@ body {
   top: auto;
   left: auto;
   width: 100%;
-  margin: 88px 0 0;
+  margin: 0;
   transform: none;
 }
 
 .cs-tokyo .cs-scroll-body {
+  container-type: inline-size;
   width: 100%;
   max-width: none;
   margin-top: 0;
@@ -618,13 +718,13 @@ body {
     width: auto;
     height: 100vh;
     margin: 0;
-    padding: 80px 28px 48px 0;
+    padding: var(--cs-top) 28px 48px 0;
     box-sizing: border-box;
   }
 
   .cs-tokyo-main {
     width: auto;
-    padding: 0 0 0 32px;
+    padding: var(--cs-top) 0 0 32px;
   }
 }
 
@@ -636,7 +736,7 @@ body {
   }
 
   .cs-tokyo-main {
-    padding: 70px 0 80px 32px;
+    padding: var(--cs-top) 0 80px 32px;
   }
 
   .cs-tokyo .cs-hero-visual {

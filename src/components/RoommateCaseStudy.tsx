@@ -34,8 +34,9 @@ type StudyLayout = {
       title?: string;
       body?: string;
       intro?: string;
+      videos?: { title: string; href: string }[];
+      notes?: { index: string; title: string; body: string }[];
       image?: string;
-      observations?: { name: string; body: string; avatar: string; side: "left" | "right" }[];
       insights?: { title: string; body: string; visual: "contrast" | "hud" | "color" | "audio" }[];
       competitors?: { name: string; cover: string; body: string; features: string[]; limitations: string[] }[];
     }[];
@@ -173,20 +174,33 @@ const layouts: Record<string, StudyLayout> = {
         {
           id: "secondary-research",
           label: "Secondary research",
-          intro:
-            "Seren and James are two video game players that are visually impaired. Their stories and experiences serve as a direct inspiration to create Tokyo Afterfall.",
-          observations: [
+          title: "Learning from James Rath's Experience with Visual Accessibility",
+          body: "James Rath is a legally blind gamer and accessibility advocate with ocular albinism and nystagmus, affecting his visual clarity and stability. Drawing from his lived experience, he evaluates video game accessibility and has contributed accessibility feedback for The Last of Us Part II and Nintendo Switch hardware. His insights informed Tokyo Afterfall's approach to improving visual accessibility during gameplay.",
+          videos: [
             {
-              name: "Seren Jaye",
-              avatar: "/seren-avatar.webp",
-              side: "left",
-              body: "Seren lost her vision at seventeen and still plays games like Mario Kart. Menus and obstacles on the Nintendo Switch are difficult to navigate, and simple accessibility features would dramatically improve her experience.",
+              title: "Blind Gamer - What I Can and Can't See",
+              href: "https://www.youtube.com/watch?v=Twr9S1KAMuQ",
             },
             {
-              name: "James Rath",
-              avatar: "/james-rath.webp",
-              side: "right",
-              body: "James consults with game studios on accessibility. He points to a high-contrast mode, like the one in Insomniac’s Spider-Man, as essential for seeing the game.",
+              title: "How Blind People Play Videos Games",
+              href: "https://www.youtube.com/watch?v=PJ1yiHkEL5c&t=908s",
+            },
+          ],
+          notes: [
+            {
+              index: "01",
+              title: "Magnification Requires Gameplay Interruptions",
+              body: "James uses the Nintendo Switch's zoom feature to read dialogue in Pokémon, but notes that activating it can require stopping gameplay or opening a menu.",
+            },
+            {
+              index: "02",
+              title: "High Contrast Improves Visibility",
+              body: "James highlights how Spider-Man Remastered and The Last of Us Part II use high-contrast settings to distinguish characters and essential gameplay elements from their surroundings.",
+            },
+            {
+              index: "03",
+              title: "Audio Feedback Supports Navigation",
+              body: "James relies on sound to navigate Splatoon 2 and highlights how distinct audio cues in The Last of Us Part II help players locate nearby enemies and items.",
             },
           ],
         },
@@ -685,6 +699,36 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 {group.body ? (
                   <p className="m-0 font-sans text-[17px] leading-[1.65] text-[#404040]">{group.body}</p>
                 ) : null}
+                {group.videos ? (
+                  <div className="cs-watch">
+                    {group.videos.map((video) => (
+                      <a
+                        key={video.href}
+                        className="cs-watch-link"
+                        href={video.href}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {video.title}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M7 17 17 7" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                          <path d="M9 7h8v8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+                {group.notes ? (
+                  <ul className="cs-note-grid">
+                    {group.notes.map((note) => (
+                      <li key={note.index} className="cs-note-card">
+                        <p className="cs-note-index">{note.index}</p>
+                        <h3>{note.title}</h3>
+                        <p>{note.body}</p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
                 {group.image ? (
                   <img
                     src={group.image}
@@ -693,34 +737,6 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                     loading="lazy"
                     decoding="async"
                   />
-                ) : null}
-                {group.observations ? (
-                  <ul className="m-0 mt-8 flex list-none flex-col gap-8 p-0">
-                    {group.observations.map((observation) => {
-                      const right = observation.side === "right";
-                      return (
-                        <li key={observation.name} className={`flex flex-col gap-2 ${right ? "items-end" : "items-start"}`}>
-                          <p className={`m-0 font-sans text-[14px] text-[#8a847c] ${right ? "pr-[52px]" : "pl-[52px]"}`}>
-                            {observation.name}
-                          </p>
-                          <div className={`flex items-center gap-3 ${right ? "flex-row-reverse" : ""}`}>
-                            <img
-                              src={observation.avatar}
-                              alt=""
-                              width={40}
-                              height={40}
-                              loading="lazy"
-                              decoding="async"
-                              className="h-10 w-10 shrink-0 rounded-full object-cover"
-                            />
-                            <p className="m-0 max-w-[560px] rounded-2xl bg-[#eceae6] px-5 py-4 font-sans text-[16px] leading-[1.55] text-[#3f3a34]">
-                              {observation.body}
-                            </p>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
                 ) : null}
                 {group.competitors ? (
                   <ul className="cs-audit-grid">
