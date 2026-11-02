@@ -45,8 +45,12 @@ type StudyLayout = {
     }[];
   };
   finalTitle: string;
+  finalBody?: ReactNode;
+  impactLabel?: string;
   impactTitle: string;
   impactBody: string;
+  aheadTitle?: string;
+  aheadBody?: string[];
 };
 
 const layouts: Record<string, StudyLayout> = {
@@ -241,10 +245,29 @@ const layouts: Record<string, StudyLayout> = {
         },
       ],
     },
-    finalTitle: "Tokyo Afterfall",
-    impactTitle: "A menu players can hear and see",
+    finalTitle: "Final Prototype",
+    finalBody: (
+      <>
+        The final Tokyo Afterfall prototype brings together{" "}
+        <strong className="font-semibold text-[#1e1a15]">three accessibility features</strong> to address visual
+        barriers in handheld gameplay. <strong className="font-semibold text-[#1e1a15]">High Contrast Mode</strong>{" "}
+        improves the visibility of key gameplay elements,{" "}
+        <strong className="font-semibold text-[#1e1a15]">Scalable HUD</strong> lets players resize essential
+        information, and <strong className="font-semibold text-[#1e1a15]">Audio Cues</strong> provide feedback beyond
+        visual indicators. Together, these features give players{" "}
+        <strong className="font-semibold text-[#1e1a15]">greater control over how they perceive and interact with gameplay</strong>{", "}
+        while preserving the core experience.
+      </>
+    ),
+    impactLabel: "Reflection",
+    impactTitle: "What I Learned",
     impactBody:
-      "Tokyo Afterfall shows how a high-contrast mode, a larger heads-up display, and audio cues can guide visually impaired players through an interactive menu.",
+      "My own experience with astigmatism inspired Tokyo Afterfall, but hearing about other players' experiences helped me realize that visual accessibility exists on a spectrum. What works for one player may not work for another, and this project reminded me that being a designer starts with understanding people. It's my responsibility to look beyond my own experiences, listen to those I'm designing for, and create solutions that make experiences more accessible to everyone.",
+    aheadTitle: "Looking Ahead",
+    aheadBody: [
+      "I want to expand Tokyo Afterfall beyond visual accessibility by exploring visual auras that communicate audio cues for deaf and hard-of-hearing players, alongside haptic feedback, additional audio cues, and customizable instructions.",
+      "I also plan to leverage AI to develop a more interactive, playable prototype that allows participants to experience a complete game level. This would enable more realistic usability testing, helping me evaluate how accessibility features perform during actual gameplay and refine them based on player feedback.",
+    ],
   },
 };
 
@@ -758,7 +781,9 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
     ...leadSections.filter((section) => section.id !== "background" || layout?.backgroundTitle),
     ...(layout?.solutions?.length ? [{ id: "solution", label: "Solution" }] : []),
     ...(layout?.research ? [{ id: "research", label: "Research" }] : []),
-    ...tailSections,
+    ...tailSections.map((section) =>
+      section.id === "impact" && layout?.impactLabel ? { ...section, label: layout.impactLabel } : section,
+    ),
   ];
   const [active, setActive] = useState(pageSections[0].id);
   const next = cases.filter((item) => item.id !== study.id);
@@ -1150,7 +1175,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
             {layout.finalTitle}
           </h2>
-          <p className="mb-6 font-sans text-[17px] leading-[1.65] text-[#404040]">{study.desc}</p>
+          <p className="mb-6 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.finalBody ?? study.desc}</p>
           {study.id === "tokyo-afterfall" ? (
             <LoopingClip src="/tokyo-prototype.mp4?v=2" alt={study.title} playback />
           ) : (
@@ -1162,15 +1187,37 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
         <section id="impact" className="mb-20 scroll-mt-8">
           <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "impact" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
-            Impact
+            {layout.impactLabel ?? "Impact"}
           </p>
-          <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
-            {layout.impactTitle}
-          </h2>
+          {layout.impactTitle ? (
+            layout.aheadTitle ? (
+              <h3 className="cs-ahead mb-3 font-sans text-[#1e1a15]">{layout.impactTitle}</h3>
+            ) : (
+              <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
+                {layout.impactTitle}
+              </h2>
+            )
+          ) : null}
           <p className="font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.impactBody}</p>
+          {layout.aheadTitle && layout.aheadBody ? (
+            <>
+              <h3 className="cs-ahead mb-3 mt-10 font-sans text-[#1e1a15]">{layout.aheadTitle}</h3>
+              <div className="flex flex-col gap-4">
+                {layout.aheadBody.map((paragraph) => (
+                  <p key={paragraph} className="m-0 font-sans text-[17px] leading-[1.65] text-[#404040]">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </>
+          ) : null}
         </section>
 
-        <p className="mt-16 text-center font-sans text-2xl font-medium tracking-[-0.03em] text-[#1e1a15]/25">thanks for reading</p>
+        {study.id === "tokyo-afterfall" ? (
+          <p className="cs-conclusion">conclusion</p>
+        ) : (
+          <p className="mt-16 text-center font-sans text-2xl font-medium tracking-[-0.03em] text-[#1e1a15]/25">thanks for reading</p>
+        )}
 
         <div className="mt-14 border-t border-[#e7e2da] pt-14">
           <p className="font-mono text-[14px] font-medium tracking-normal text-[#b5b5b5]">

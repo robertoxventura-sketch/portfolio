@@ -201,8 +201,15 @@ export function InterviewExplorer() {
       const rect = canvas.getBoundingClientRect();
       zoomAt(event.deltaY > 0 ? 1 / 1.12 : 1.12, event.clientX - rect.left, event.clientY - rect.top);
     };
+    const blockSelect = (event: Event) => event.preventDefault();
     canvas.addEventListener("wheel", onWheel, { passive: false });
-    return () => canvas.removeEventListener("wheel", onWheel);
+    canvas.addEventListener("selectstart", blockSelect);
+    canvas.addEventListener("dragstart", blockSelect);
+    return () => {
+      canvas.removeEventListener("wheel", onWheel);
+      canvas.removeEventListener("selectstart", blockSelect);
+      canvas.removeEventListener("dragstart", blockSelect);
+    };
   }, [zoomAt]);
 
   const center = () => {
@@ -214,6 +221,8 @@ export function InterviewExplorer() {
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
     if ((event.target as HTMLElement).closest(".ix-chrome")) return;
+    event.preventDefault();
+    window.getSelection()?.removeAllRanges();
     drag.current = {
       pointerId: event.pointerId,
       startX: event.clientX,

@@ -230,6 +230,13 @@ body {
   line-height: 1.4;
 }
 
+.cs-tokyo h3.cs-ahead {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
 .cs-tokyo .cs-scroll-body p.font-sans,
 .cs-tokyo-overview-body {
   font-size: 15.4px;
@@ -478,6 +485,19 @@ body {
   font-synthesis: none;
   letter-spacing: 0;
   line-height: 1.2;
+}
+
+.cs-tokyo .cs-conclusion {
+  margin: 64px 0 0;
+  color: rgba(30, 26, 21, 0.28);
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .cs-tokyo-rail-note {
@@ -1077,6 +1097,8 @@ body {
   background-image: radial-gradient(rgba(30, 26, 21, 0.16) 1.15px, transparent 1.15px);
   background-size: 20px 20px;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .ix-canvas.is-grabbing,
