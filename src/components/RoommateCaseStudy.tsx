@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { cases, type CaseStudy } from "../data/cases";
 import { posterSrc, useNearViewport, usePrefersReducedMotion } from "../lib/media";
 import { CoverMedia } from "./CoverMedia";
 import { CaseStudyDock } from "./FolderDock";
+import { InterviewExplorer } from "./InterviewExplorer";
 
 const leadSections = [
   { id: "overview", label: "Overview" },
@@ -210,7 +212,6 @@ const layouts: Record<string, StudyLayout> = {
           label: "User interviews",
           title: "Listening to players with different visual needs.",
           body: "I conducted semi-structured interviews with 4 active gamers with visual impairments to understand how their visual needs shape handheld gameplay and where existing accessibility features fall short. I synthesized responses through affinity mapping to identify recurring patterns.",
-          image: "/user-interviews-affinity.webp",
         },
         {
           id: "findings",
@@ -249,16 +250,60 @@ const layouts: Record<string, StudyLayout> = {
 
 const solutionVideo = /\.(mov|mp4|webm|m4v)(\?.*)?$/i;
 
+export function ReadingProgress() {
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
+      bar.style.transform = `scaleX(${progress})`;
+      bar.parentElement?.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+    };
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  return (
+    <div
+      className="pointer-events-none fixed inset-x-0 top-0 z-[80] h-[3px]"
+      role="progressbar"
+      aria-label="Case study progress"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={0}
+    >
+      <div ref={barRef} className="h-full w-full origin-left bg-[#fb0f0c]" style={{ transform: "scaleX(0)" }} />
+    </div>
+  );
+}
+
 function LoopingClip({
   src,
   alt,
   sound = false,
   active = true,
+  playback = false,
 }: {
   src: string;
   alt: string;
   sound?: boolean;
   active?: boolean;
+  playback?: boolean;
 }) {
   const [videoRef, near] = useNearViewport<HTMLVideoElement>("480px");
   const reduce = usePrefersReducedMotion();
@@ -267,6 +312,7 @@ function LoopingClip({
   const [requested, setRequested] = useState(false);
   const loadVideo = near && (!reduce || requested);
   const activeRef = useRef(active);
+  const progressRef = useRef<HTMLSpanElement>(null);
   activeRef.current = active;
 
   useEffect(() => {
@@ -324,6 +370,51 @@ function LoopingClip({
     void video.play().catch(() => setPaused(true));
   }, [active, loadVideo, reduce, requested, videoRef]);
 
+  useEffect(() => {
+    if (!playback) return;
+    const video = videoRef.current;
+    const bar = progressRef.current;
+    if (!video || !bar) return;
+    let frame = 0;
+    let running = false;
+    const paint = () => {
+      const duration = video.duration;
+      const progress = duration && Number.isFinite(duration) ? Math.min(1, Math.max(0, video.currentTime / duration)) : 0;
+      bar.style.transform = `scaleX(${progress})`;
+      bar.parentElement?.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+    };
+    const loop = () => {
+      paint();
+      if (running) frame = requestAnimationFrame(loop);
+    };
+    const onPlay = () => {
+      running = true;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(loop);
+    };
+    const onPause = () => {
+      running = false;
+      cancelAnimationFrame(frame);
+      paint();
+    };
+    video.addEventListener("play", onPlay);
+    video.addEventListener("pause", onPause);
+    video.addEventListener("ended", onPause);
+    video.addEventListener("loadedmetadata", paint);
+    video.addEventListener("seeked", paint);
+    if (video.paused) paint();
+    else onPlay();
+    return () => {
+      running = false;
+      cancelAnimationFrame(frame);
+      video.removeEventListener("play", onPlay);
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onPause);
+      video.removeEventListener("loadedmetadata", paint);
+      video.removeEventListener("seeked", paint);
+    };
+  }, [playback, loadVideo, src, videoRef]);
+
   const togglePlayback = () => {
     if (!loadVideo) {
       setRequested(true);
@@ -344,6 +435,18 @@ function LoopingClip({
     setMuted(next);
   };
 
+  const replay = () => {
+    if (!loadVideo) {
+      setRequested(true);
+      setPaused(false);
+      return;
+    }
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play().catch(() => setPaused(true));
+  };
+
   return (
     <figure className="cs-clip relative m-0 overflow-hidden rounded-lg">
       <video
@@ -357,6 +460,18 @@ function LoopingClip({
         preload="none"
         aria-label={alt}
       />
+      {playback ? (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-[8] box-border h-[5px] border border-solid border-[#b5b3b1]"
+          role="progressbar"
+          aria-label="Prototype progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={0}
+        >
+          <span ref={progressRef} className="block h-full w-full origin-left bg-[#b5b3b1]" style={{ transform: "scaleX(0)" }} />
+        </div>
+      ) : null}
       <div className="cs-clip-controls" data-open={paused || (sound && !muted) ? "true" : undefined}>
         <button type="button" className="cs-clip-btn" aria-label={paused ? "Play video" : "Pause video"} aria-pressed={paused} onClick={togglePlayback}>
           {paused ? (
@@ -370,6 +485,14 @@ function LoopingClip({
             </svg>
           )}
         </button>
+        {playback ? (
+          <button type="button" className="cs-clip-btn" aria-label="Replay video" onClick={replay}>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4.5 12a7.5 7.5 0 1 0 2.05-5.15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M4 4.75V9.2h4.45" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        ) : null}
         {sound ? (
           <button type="button" className="cs-clip-btn" aria-label={muted ? "Unmute video" : "Mute video"} aria-pressed={!muted} onClick={toggleMuted}>
             {muted ? (
@@ -554,6 +677,72 @@ function InsightSnap({ kind }: { kind: "contrast" | "hud" | "color" | "audio" })
   );
 }
 
+function ExpandableImage({ src, alt }: { src: string; alt: string }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    closeRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKey);
+      triggerRef.current?.focus();
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="cs-zoom"
+        aria-label={`View larger: ${alt}`}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+      >
+        <img src={src} alt="" width={1024} height={626} decoding="async" />
+        <span className="cs-zoom-cue" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+            <path d="M21 21l-4.35-4.35M11 8v6M8 11h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </span>
+      </button>
+      {open
+        ? createPortal(
+            <div className="cs-lightbox-backdrop" onClick={() => setOpen(false)}>
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={alt}
+                className="cs-lightbox"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <p className="sr-only">Expanded image. Press Escape to close.</p>
+                <img src={src} alt={alt} width={1024} height={626} />
+                <button ref={closeRef} type="button" className="cs-lightbox-close" aria-label="Close" onClick={() => setOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
+  );
+}
+
 function statusDot(tone: NonNullable<CaseStudy["status"]>["tone"]) {
   if (tone === "concept") return "concept-dot";
   if (tone === "delivered") return "delivered-dot";
@@ -606,6 +795,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
   return (
     <div className={`min-h-screen ${study.id === "tokyo-afterfall" ? "cs-tokyo bg-white text-[#1e1a15]" : "bg-[#f7f7f5] text-[#1e1a15]"}`}>
+      <ReadingProgress />
       <Link
         to="/"
         className="fixed left-0 right-0 top-0 z-50 px-7 py-[18px] font-display text-[17px] tracking-tight text-[#1e1a15] sm:px-12"
@@ -874,13 +1064,11 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                     ))}
                   </ul>
                 ) : null}
+                {group.id === "user-interviews" ? <InterviewExplorer /> : null}
                 {group.image ? (
-                  <img
+                  <ExpandableImage
                     src={group.image}
-                    alt="Affinity map of interview notes grouped by visual impairment, preferred gaming method, pain points, and solutions."
-                    className="mt-8 w-full"
-                    loading="lazy"
-                    decoding="async"
+                    alt="Interview findings grouped by visual impairment, preferred method of gaming, pain points, and helpful accessibility features."
                   />
                 ) : null}
                 {group.competitors ? (
@@ -948,7 +1136,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
           </h2>
           <p className="mb-6 font-sans text-[17px] leading-[1.65] text-[#404040]">{study.desc}</p>
           {study.id === "tokyo-afterfall" ? (
-            <LoopingClip src="/tokyo-prototype.mp4?v=2" alt={study.title} />
+            <LoopingClip src="/tokyo-prototype.mp4?v=2" alt={study.title} playback />
           ) : (
             <figure className="m-0">
               <CoverMedia src={visual} alt={study.title} className="w-full rounded-2xl" />

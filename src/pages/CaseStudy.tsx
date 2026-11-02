@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { CaseStudyDock } from "../components/FolderDock";
 import { Header } from "../components/Header";
-import { RoommateCaseStudy } from "../components/RoommateCaseStudy";
+import { ReadingProgress, RoommateCaseStudy } from "../components/RoommateCaseStudy";
 import { cases } from "../data/cases";
 
 export function CaseStudy() {
@@ -14,6 +14,7 @@ export function CaseStudy() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <ReadingProgress />
       <Header />
       <main className="mx-auto max-w-3xl px-6 pb-40 pt-36">
         <Link to="/" className="font-sans text-body-sm text-muted-foreground hover:text-foreground">
