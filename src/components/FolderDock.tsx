@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-export type DockSection = "works" | "profile";
+export type DockSection = "home" | "works" | "profile";
 
 const RESUME_HREF =
   "https://drive.google.com/file/d/1V5zcLX-MAGb667flbXnNJDQAa8KGv6BF/view?usp=sharing";
@@ -13,6 +13,9 @@ const labelClass =
   "font-sans text-[13px] font-medium tracking-[-0.18px] text-[#1e1a15]";
 
 const iconClass = "block h-12 w-auto max-w-[52px] object-contain drop-shadow-[2px_3px_4px_#DEDEDE]";
+
+const emojiClass =
+  "flex select-none items-center justify-center leading-none [font-family:'Apple_Color_Emoji','Segoe_UI_Emoji','Noto_Color_Emoji',emoji,sans-serif]";
 
 const iconSpring = { type: "spring" as const, duration: 0.45, bounce: 0.25 };
 
@@ -81,10 +84,12 @@ function DockItem({
 
 export function FolderDock({
   active,
+  onHome,
   onWorks,
   onProfile,
 }: {
   active: DockSection | null;
+  onHome: () => void;
   onWorks: () => void;
   onProfile: () => void;
 }) {
@@ -93,7 +98,12 @@ export function FolderDock({
       aria-label="Sections"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(18px,env(safe-area-inset-bottom))]"
     >
-      <div className="pointer-events-auto flex items-end gap-3.5 rounded-[26px] border border-white/55 bg-white/45 px-4 pb-[7px] pt-[9px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.05),0_1px_3px_rgba(0,0,0,0.05),0_10px_36px_rgba(0,0,0,0.08),inset_0_1.5px_1px_rgba(255,255,255,0.9)] backdrop-blur-[24px] backdrop-saturate-150">
+      <div className="pointer-events-auto flex items-end gap-2 rounded-[26px] border border-white/55 bg-white/45 px-3 pb-[7px] pt-[9px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.05),0_1px_3px_rgba(0,0,0,0.05),0_10px_36px_rgba(0,0,0,0.08),inset_0_1.5px_1px_rgba(255,255,255,0.9)] backdrop-blur-[24px] backdrop-saturate-150 sm:gap-3.5 sm:px-4">
+        <DockItem label="Home" active={active === "home"} onClick={onHome}>
+          <span aria-hidden="true" className={`${emojiClass} h-12 w-12 text-[42px]`}>
+            🏠
+          </span>
+        </DockItem>
         <DockItem label="Work" active={active === "works"} onClick={onWorks}>
           <img src="/nav/icon-work.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
@@ -135,29 +145,43 @@ const miniIconClass = "block h-8 w-auto max-w-9 object-contain drop-shadow-[1px_
 function MiniDockItem({
   label,
   icon,
+  glyph,
   href,
   onClick,
 }: {
   label: string;
-  icon: string;
+  icon?: string;
+  glyph?: string;
   href?: string;
   onClick?: () => void;
 }) {
   const reduceMotion = useReducedMotion();
   const className =
     "group relative grid size-11 place-items-center rounded-[12px] text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e1a15]";
+  const hover = reduceMotion ? undefined : { y: -4, scale: 1.12 };
   const body = (
     <>
-      <motion.img
-        src={icon}
-        alt=""
-        width={256}
-        height={256}
-        decoding="async"
-        className={miniIconClass}
-        whileHover={reduceMotion ? undefined : { y: -4, scale: 1.12 }}
-        transition={iconSpring}
-      />
+      {glyph ? (
+        <motion.span
+          aria-hidden="true"
+          className={`${emojiClass} size-10 text-[40px]`}
+          whileHover={hover}
+          transition={iconSpring}
+        >
+          {glyph}
+        </motion.span>
+      ) : (
+        <motion.img
+          src={icon}
+          alt=""
+          width={256}
+          height={256}
+          decoding="async"
+          className={miniIconClass}
+          whileHover={hover}
+          transition={iconSpring}
+        />
+      )}
       <span className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1e1a15] px-2 py-1 font-sans text-[11px] font-medium leading-none text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
         {label}
       </span>
@@ -209,6 +233,7 @@ export function CaseStudyDock() {
           visible ? "pointer-events-auto" : ""
         }`}
       >
+        <MiniDockItem label="Home" glyph="🏠" onClick={() => navigate("/")} />
         <MiniDockItem label="Work" icon="/nav/icon-work.webp" onClick={() => navigate("/", { state: { view: "works" } })} />
         <MiniDockItem label="Resume" icon="/nav/icon-resume.webp" href={RESUME_HREF} />
         <MiniDockItem label="LinkedIn" icon="/nav/icon-linkedin.webp" href={LINKEDIN_HREF} />

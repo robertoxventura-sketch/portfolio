@@ -166,7 +166,7 @@ body {
 
 .cs-hero-visual {
   position: fixed;
-  top: 60px;
+  top: 24px;
   left: 50%;
   z-index: 0;
   width: min(768px, calc(100vw - 48px));
@@ -180,7 +180,7 @@ body {
   position: relative;
   z-index: 1;
   width: min(768px, calc(100vw - 48px));
-  margin-top: calc(60px + min(768px, calc(100vw - 48px)) * 9 / 16);
+  margin-top: calc(24px + min(768px, calc(100vw - 48px)) * 9 / 16);
   padding-top: 28px;
 }
 
@@ -205,7 +205,7 @@ body {
   --cs-sans: -apple-system, system-ui, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --cs-display: var(--cs-sans);
   --cs-text: var(--cs-sans);
-  --cs-top: 80px;
+  --cs-top: 32px;
 }
 
 .cs-tokyo .font-sans,
@@ -335,30 +335,32 @@ body {
 }
 
 .cs-watch {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
   margin-top: 28px;
 }
 
 .cs-watch-link {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  width: fit-content;
-  max-width: 100%;
-  padding: 11px 16px;
-  border-radius: 12px;
-  background: #f0e6d4;
-  color: #1c1a16;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 16px;
+  border: 1px solid rgba(30, 26, 21, 0.08);
+  border-radius: 14px;
+  background: #fff;
+  color: #1e1a15;
   font-family: var(--cs-text);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
   line-height: 1.3;
   text-decoration: none;
-  transition: background 200ms, color 200ms;
+  transition: background 200ms, color 200ms, border-color 200ms;
 }
 
 .cs-watch-link svg {
@@ -367,8 +369,9 @@ body {
 
 .cs-watch-link:hover,
 .cs-watch-link:focus-visible {
-  background: #1f1d1a;
-  color: #fbf8f1;
+  border-color: #fb0f0c;
+  background: #fb0f0c;
+  color: #fff;
 }
 
 .cs-note-grid {
@@ -423,6 +426,12 @@ body {
   color: rgba(30, 26, 21, 0.62);
   font-size: 15px;
   line-height: 1.55;
+}
+
+@container (min-width: 560px) {
+  .cs-watch {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @container (min-width: 720px) {
@@ -1042,62 +1051,6 @@ body {
   letter-spacing: -0.025em;
 }
 
-.nav-cluster {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 38px;
-  padding: 10px;
-  border: 1px solid #e5e5e5;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.07),
-    0 1px 3px rgba(0, 0, 0, 0.04);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.nav-cluster a {
-  display: flex;
-  align-items: center;
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: transparent;
-  color: rgb(18, 18, 18);
-  font-family: Geist, Inter, -apple-system, system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 550;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    transform 0.16s ease;
-}
-
-@media (hover: hover) {
-  .nav-cluster a:hover {
-    background: #4d4d4d;
-    color: #fff;
-    transform: translateY(-1px);
-  }
-}
-
-.nav-cluster a:focus-visible {
-  outline: 2px solid #171717;
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nav-cluster a {
-    transition: none;
-  }
-}
-
 .ix {
   margin-top: 28px;
   container-name: ix;
@@ -1158,7 +1111,7 @@ body {
   min-height: 44px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #f3a598;
+  background: #fb0f0c;
   color: #fff;
   font-family: var(--cs-text, inherit);
   font-size: 13px;

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { CaseGrid } from "../components/CaseGrid";
 import { FolderDock } from "../components/FolderDock";
-import { Header } from "../components/Header";
 import { Hero } from "../components/Hero";
 import { ProfilePanel } from "../components/ProfilePanel";
 import { cases } from "../data/cases";
@@ -104,6 +103,24 @@ export function Home() {
     }, 430);
   }, []);
 
+  const goToHome = useCallback(() => {
+    const current = viewRef.current;
+    if (current === "hero" || current === "hero-leaving" || current === "works-leaving") return;
+    window.clearTimeout(leaveTimer.current);
+    if (current === "works" && settledRef.current) {
+      setView("works-leaving");
+      leaveTimer.current = window.setTimeout(() => {
+        setView("hero");
+        setWorksSettled(false);
+        window.scrollTo({ top: 0 });
+      }, 430);
+      return;
+    }
+    setWorksSettled(false);
+    setView("hero");
+    window.scrollTo({ top: 0 });
+  }, []);
+
   useEffect(() => {
     const lock = view === "hero" || view === "hero-leaving" || view === "works-leaving" || !worksSettled;
     document.documentElement.style.overflow = lock ? "hidden" : "";
@@ -174,20 +191,8 @@ export function Home() {
     };
   }, [goToHero, goToWorks]);
 
-  useEffect(() => {
-    const onHome = () => {
-      window.clearTimeout(leaveTimer.current);
-      setWorksSettled(false);
-      setView("hero");
-      window.scrollTo({ top: 0 });
-    };
-    window.addEventListener("portfolio-home", onHome);
-    return () => window.removeEventListener("portfolio-home", onHome);
-  }, []);
-
   return (
     <div className="relative isolate min-h-screen bg-background text-foreground overflow-x-clip">
-      <Header />
       <CoverPreload />
 
       {(view === "hero" || view === "hero-leaving") && (
@@ -228,8 +233,9 @@ export function Home() {
             ? "works"
             : view === "profile"
               ? "profile"
-              : null
+              : "home"
         }
+        onHome={goToHome}
         onWorks={goToWorks}
         onProfile={goToProfile}
       />

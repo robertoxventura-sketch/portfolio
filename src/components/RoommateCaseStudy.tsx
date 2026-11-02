@@ -259,8 +259,11 @@ export function ReadingProgress() {
     let frame = 0;
     const update = () => {
       frame = 0;
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
+      const impact = document.getElementById("impact");
+      const end = impact
+        ? Math.max(0, window.scrollY + impact.getBoundingClientRect().top - 32)
+        : document.documentElement.scrollHeight - window.innerHeight;
+      const progress = end > 0 ? Math.min(1, Math.max(0, window.scrollY / end)) : 1;
       bar.style.transform = `scaleX(${progress})`;
       bar.parentElement?.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
     };
@@ -462,7 +465,7 @@ function LoopingClip({
       />
       {playback ? (
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-[8] box-border h-[5px] border border-solid border-[#b5b3b1]"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[8] h-[5px]"
           role="progressbar"
           aria-label="Prototype progress"
           aria-valuemin={0}
@@ -770,40 +773,53 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
     };
   }, [study.id]);
 
+  const sectionKey = pageSections.map((section) => section.id).join(" ");
+
   useEffect(() => {
-    const observedIds = [
-      ...pageSections.map((section) => section.id),
-      ...(layout?.research?.groups.map((group) => group.id) ?? []),
-    ];
-    const nodes = observedIds
-      .map((id) => document.getElementById(id))
-      .filter((node): node is HTMLElement => Boolean(node));
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActive(visible.target.id);
-      },
-      { rootMargin: "-20% 0px -55% 0px", threshold: [0.15, 0.4, 0.7] },
-    );
-    nodes.forEach((node) => observer.observe(node));
-    return () => observer.disconnect();
-  }, [study.id]);
+    const ids = sectionKey.split(" ");
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      const marker = Math.min(160, window.innerHeight * 0.28);
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const atBottom = scrollable > 0 && window.scrollY >= scrollable - 2;
+      let current = ids[0];
+      if (atBottom) {
+        current = ids[ids.length - 1];
+      } else {
+        for (const id of ids) {
+          const node = document.getElementById(id);
+          if (node && node.getBoundingClientRect().top <= marker) current = id;
+        }
+      }
+      setActive((previous) => (previous === current ? previous : current));
+    };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    window.addEventListener("hashchange", onScroll);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("hashchange", onScroll);
+    };
+  }, [sectionKey]);
 
   if (!layout) return null;
 
   return (
     <div className={`min-h-screen ${study.id === "tokyo-afterfall" ? "cs-tokyo bg-white text-[#1e1a15]" : "bg-[#f7f7f5] text-[#1e1a15]"}`}>
       <ReadingProgress />
-      <Link
-        to="/"
-        className="fixed left-0 right-0 top-0 z-50 px-7 py-[18px] font-display text-[17px] tracking-tight text-[#1e1a15] sm:px-12"
-      >
-        Roberto Ventura
-      </Link>
 
-      <aside className={`${study.id === "tokyo-afterfall" ? "cs-tokyo-rail " : ""}fixed left-10 top-[112px] z-40 hidden w-[180px] min-[1280px]:block`}>
+      <aside className={`${study.id === "tokyo-afterfall" ? "cs-tokyo-rail " : ""}fixed left-10 top-8 z-40 hidden w-[180px] min-[1280px]:block`}>
         <Link
           to="/"
           state={{ view: "works" }}
@@ -916,10 +932,10 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         </header>
         )}
 
-        <section id="overview" className="mb-20 scroll-mt-24">
+        <section id="overview" className="mb-20 scroll-mt-8">
           {study.id === "tokyo-afterfall" ? (
             <div className="cs-tokyo-overview">
-              <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+              <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
                 Overview
               </p>
               <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -929,7 +945,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
             </div>
           ) : (
             <>
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
             Overview
           </p>
             <p className="mb-5 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.overview ?? study.desc}</p>
@@ -953,8 +969,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         </section>
 
         {layout.backgroundTitle ? (
-        <section id="background" className="mb-20 scroll-mt-24">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "background" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+        <section id="background" className="mb-20 scroll-mt-8">
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "background" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
             Background
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -981,8 +997,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         </section>
         ) : null}
 
-        <section id="problem" className="mb-20 scroll-mt-24">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "problem" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+        <section id="problem" className="mb-20 scroll-mt-8">
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "problem" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
             Problem
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -1005,8 +1021,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         </section>
 
         {layout.solutions?.length ? (
-          <section id="solution" className="mb-20 scroll-mt-24">
-            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "solution" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+          <section id="solution" className="mb-20 scroll-mt-8">
+            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "solution" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
               Solution
             </p>
             <SolutionCarousel items={layout.solutions} />
@@ -1014,12 +1030,12 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         ) : null}
 
         {layout.research ? (
-          <section id="research" className="mb-20 scroll-mt-24">
-            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "research" || layout.research.groups.some((group) => group.id === active) ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+          <section id="research" className="mb-20 scroll-mt-8">
+            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "research" || layout.research.groups.some((group) => group.id === active) ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
               Research
             </p>
             {layout.research.groups.map((group, index) => (
-              <div key={group.id} id={group.id} className={`scroll-mt-24 ${index > 0 ? "mt-14" : ""}`}>
+              <div key={group.id} id={group.id} className={`scroll-mt-8 ${index > 0 ? "mt-14" : ""}`}>
                 <h2 className="mb-4 font-mono text-[12px] font-medium tracking-normal text-[#5a5248]">
                   {group.label}
                 </h2>
@@ -1127,8 +1143,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
           </section>
         ) : null}
 
-        <section id="final-product" className="mb-20 scroll-mt-24">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "final-product" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+        <section id="final-product" className="mb-20 scroll-mt-8">
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "final-product" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
             Final product
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -1144,8 +1160,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
           )}
         </section>
 
-        <section id="impact" className="mb-20 scroll-mt-24">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "impact" ? "text-[#0066cc]" : "text-[#8a8a8a]"}`}>
+        <section id="impact" className="mb-20 scroll-mt-8">
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "impact" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
             Impact
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
