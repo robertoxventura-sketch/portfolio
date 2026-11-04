@@ -13,8 +13,10 @@
   --secondary-foreground: 0 0% 8%;
   --muted: 0 0% 92%;
   --muted-foreground: 0 0% 42%;
-  --accent: 222 89% 55%;
+  --accent: 217 89% 61%;
   --accent-foreground: 0 0% 98%;
+  --brand: #4285f4;
+  --brand-ring: rgba(66, 133, 244, 0.45);
   --success: 163 55% 60%;
   --border: 0 0% 88%;
   --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.04), 0 8px 24px -8px hsl(0 0% 0% / 0.08);
@@ -295,8 +297,8 @@ body {
 
 @media (hover: hover) and (pointer: fine) {
   .cs-tokyo .cs-spotlight:hover {
-    border-color: #fb0f0c;
-    box-shadow: 0 0 0 1px rgba(251, 15, 12, 0.45);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 1px var(--brand-ring);
   }
 }
 
@@ -306,7 +308,7 @@ body {
   }
 
   .cs-tokyo .cs-spotlight:hover {
-    border-color: #fb0f0c;
+    border-color: var(--brand);
   }
 }
 
@@ -337,6 +339,80 @@ body {
   margin: 12px 0;
   border-radius: 6px;
   object-fit: cover;
+}
+
+.cs-audit-logo {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  margin: 12px 0;
+  border-radius: 6px;
+  background: #f3f1ee;
+}
+
+.cs-audit-logo img {
+  width: 88px;
+  height: 88px;
+}
+
+.cs-audit-logo.is-dark {
+  background: linear-gradient(27deg, #1c2836 0%, #1e3d86 100%);
+}
+
+.cs-audit-logo.is-dark img,
+.cs-audit-logo.is-word img {
+  width: min(230px, 78%);
+  height: auto;
+}
+
+.cs-audit-point {
+  color: #1e1a15;
+  font-weight: 600;
+}
+
+.cs-media-slot {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  background: #f3f1ee;
+  color: rgba(30, 26, 21, 0.38);
+  font-family: var(--cs-text, inherit);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cs-media-slot-fill {
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 8px;
+}
+
+.cs-audit-cover.cs-media-slot {
+  aspect-ratio: 16 / 10;
+}
+
+.cs-media-slot-board {
+  aspect-ratio: 16 / 10;
+  margin-top: 28px;
+  border: 1px solid #e6e2dc;
+  border-radius: 16px;
+  background: #f4f5f6;
+}
+
+.cs-watch-link.is-placeholder {
+  cursor: default;
+}
+
+.cs-watch-link.is-placeholder:hover,
+.cs-watch-link.is-placeholder:focus-visible {
+  border-color: rgba(30, 26, 21, 0.08);
+  background: #fff;
+  color: #1e1a15;
 }
 
 .cs-audit-foot {
@@ -399,8 +475,8 @@ body {
 
 .cs-watch-link:hover,
 .cs-watch-link:focus-visible {
-  border-color: #fb0f0c;
-  background: #fb0f0c;
+  border-color: var(--brand);
+  background: var(--brand);
   color: #fff;
 }
 
@@ -1156,7 +1232,7 @@ body {
   min-height: 44px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #fb0f0c;
+  background: var(--brand);
   color: #fff;
   font-family: var(--cs-text, inherit);
   font-size: 13px;

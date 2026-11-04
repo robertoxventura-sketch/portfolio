@@ -19,6 +19,12 @@ const tailSections = [
 ];
 
 type StudyLayout = {
+  editorial?: boolean;
+  placeholderMedia?: boolean;
+  openTitle?: string;
+  railNote?: string;
+  facts?: { label: string; value: string }[];
+  prototype?: string;
   overview?: string;
   tags: string[];
   meta: { label: string; value: string }[];
@@ -34,14 +40,19 @@ type StudyLayout = {
     groups: {
       id: string;
       label: string;
+      lead?: boolean;
+      board?: boolean;
+      slot?: boolean;
+      featureLabel?: string;
+      limitationLabel?: string;
       title?: string;
       body?: string;
       intro?: string;
-      videos?: { title: string; href: string }[];
+      videos?: { title: string; href?: string }[];
       notes?: { index: string; title: string; body: string }[];
       image?: string;
-      insights?: { title: string; body: string; visual: "contrast" | "hud" | "color" | "audio" }[];
-      competitors?: { name: string; cover: string; body: string; features: string[]; limitations: string[] }[];
+      insights?: { title: string; body: string; visual?: "contrast" | "hud" | "color" | "audio" }[];
+      competitors?: { name: string; cover?: string; logo?: boolean; logoSurface?: "dark"; logoFit?: "word"; body: string; features: string[]; limitations: string[] }[];
     }[];
   };
   finalTitle: string;
@@ -55,6 +66,18 @@ type StudyLayout = {
 
 const layouts: Record<string, StudyLayout> = {
   "table-redesign": {
+    editorial: true,
+    placeholderMedia: true,
+    openTitle: "Redesigning the Roommate Matching Experience",
+    railNote: "Redesigning the roommate matching experience.",
+    facts: [
+      { label: "Timeline", value: "Oct 2025 – Dec 2025" },
+      { label: "Role", value: "Product Designer" },
+      { label: "Type", value: "Web Application" },
+      { label: "Team", value: "Roberto Ventura\nHiyab Woldegebriel" },
+    ],
+    overview:
+      "PadPal is a 0→1 roommate-matching platform designed to make finding compatible roommates safer and more efficient. A preference survey filters candidates based on essential criteria and ranks potential matches using weighted compatibility scores. Mandatory identity verification compares a live selfie against a submitted ID before users can access the matching experience. PadPal is currently live and publicly accessible.",
     tags: ["Responsive Web App"],
     meta: [
       { label: "My Role", value: "Product Designer" },
@@ -62,31 +85,160 @@ const layouts: Record<string, StudyLayout> = {
       { label: "Roles", value: "Product Designer\nSoftware Engineer" },
       { label: "Team", value: "Roberto Ventura\nHiyab Woldegebriel" },
     ],
-    backgroundTitle: "Why Roommate Search Falls Short",
-    backgroundCards: [
+    problemTitle: "Finding a compatible roommate can be time-consuming and uncertain.",
+    problemBody:
+      "People commonly turn to social media and dedicated roommate-matching platforms to find potential roommates. However, social media often lacks effective ways to identify candidates who meet essential living requirements and personal preferences, while inconsistent identity verification across both types of platforms creates uncertainty about who users are interacting with. These limitations can prolong the roommate search process and make it difficult for users to confidently evaluate potential roommates.",
+    northStarLabel: "Design challenge",
+    northStar:
+      "How might we help people efficiently identify compatible roommates while increasing confidence in who they are interacting with?",
+    solutions: [
       {
-        title: "Platforms Verify Accounts, Not Identities",
-        body: "Common verification methods, such as email and phone verification, leave room for inauthentic accounts like bots, spam, and impersonators, weakening user trust in the platform.",
+        title: "Compatibility-Based Matching",
+        body: "Users complete a preference survey that establishes essential living requirements and lifestyle preferences. Essential criteria filter out incompatible candidates, while weighted compatibility scores rank the remaining potential roommates based on how closely their preferences align.",
       },
       {
-        title: "Users Rely on Platforms Not Built for Roommate Search",
-        body: "Without roommate-specific search and matching tools, users must manually find, compare, and evaluate potential roommates, making the process time-consuming and inefficient.",
+        title: "Mandatory Identity Verification",
+        body: "Before accessing roommate discovery, users complete an identity verification process that compares a live selfie with a submitted government-issued ID. This requirement helps establish that users are representing their identities accurately before interacting with potential roommates.",
       },
       {
-        title: "Dedicated Roommate Platforms Feel Outdated and Inactive",
-        body: "Outdated interfaces can make platforms feel less trustworthy, discouraging users from engaging with potential roommates.",
+        title: "Streamlined Roommate Evaluation",
+        body: "Users browse compatible candidates through a swipe-based discovery feed featuring profiles that highlight personal interests and living preferences. Visual feedback and onboarding guidance help users navigate profiles and evaluate potential roommates more efficiently.",
       },
     ],
-    backgroundNote: "User interviews, competitive analysis, and secondary research uncovered these critical gaps.",
-    problemTitle: "Finding roommates is easy. Finding the right one isn’t.",
-    problemBody:
-      "Existing solutions create gaps in trust, efficiency, and compatibility, making it difficult to confidently choose the right roommate.",
-    northStar: "How might we make roommate search safer, more efficient, and compatibility-driven?",
+    research: {
+      groups: [
+        {
+          id: "competitive-analysis",
+          label: "Competitive analysis",
+          lead: true,
+          body: "I selected two social platforms, Facebook Groups and Reddit, and two dedicated roommate-search platforms, Roommates.com and SpareRoom, to evaluate how existing services support compatibility assessment and identity verification. These platforms were chosen for their distinct approaches to roommate discovery, ranging from community-based listings to specialized search and matching tools, allowing me to compare how users identify, evaluate, and connect with potential roommates.",
+          featureLabel: "Pros",
+          limitationLabel: "Cons",
+          competitors: [
+            {
+              name: "Facebook Groups",
+              cover: "/competitors/facebook.svg",
+              logo: true,
+              body: "",
+              features: [
+                "Community-based discovery: Users can find roommate listings within location-specific housing groups.",
+                "Direct communication: Users can contact potential roommates through comments or Messenger.",
+              ],
+              limitations: [
+                "Limited Listing Filters: Facebook Groups often combine property listings and roommate requests within the same feed, requiring users seeking roommates to manually review irrelevant posts to identify suitable candidates.",
+                "Limited Identity Assurance: Facebook's account registration relies on email or phone number confirmation, which verifies access to contact information but does not establish whether users are accurately representing their real-world identities.",
+              ],
+            },
+            {
+              name: "Roommates.com",
+              cover: "/competitors/roommates.png",
+              logo: true,
+              logoSurface: "dark",
+              body: "",
+              features: [
+                "Roommate-Specific Filtering: Users can narrow their search based on criteria such as location, budget, and living preferences, helping identify potentially compatible roommates.",
+                "Compatibility Matching: The platform uses profile information and user preferences to suggest potential roommate matches.",
+              ],
+              limitations: [
+                "Optional Identity Verification: Users can access roommate-matching features without completing identity verification, leaving uncertainty about the identities of potential roommates.",
+                "Inconsistent Preference Matching: Users have reported receiving matches that conflict with their stated preferences, requiring additional effort to identify suitable roommates.",
+              ],
+            },
+            {
+              name: "SpareRoom",
+              cover: "/competitors/spareroom.svg",
+              logo: true,
+              logoFit: "word",
+              body: "",
+              features: [
+                "Advanced Search Filters: Users can narrow results by location, budget, and lifestyle preferences to identify suitable living arrangements.",
+                "Separate Search Categories: Users can browse available rooms and roommate-seeker listings separately, reducing irrelevant results and making searches more focused.",
+              ],
+              limitations: [
+                "Optional Paid Verification: Users can search for roommates and post listings without verifying their identity through government-issued identification, leaving uncertainty about who they are interacting with.",
+                "Restricted Communication: Free users face limitations when contacting newly posted listings, potentially delaying communication with prospective roommates.",
+              ],
+            },
+            {
+              name: "Reddit",
+              cover: "/competitors/reddit.svg",
+              logo: true,
+              body: "",
+              features: [
+                "Topic-Based Discovery: Users can find roommate requests and housing listings within subreddits focused on specific locations or topics.",
+                "Search & Post Filtering: Users can search by keywords and sort posts to locate relevant housing discussions.",
+              ],
+              limitations: [
+                "Limited Compatibility Filtering: Users cannot systematically filter roommate requests by essential living preferences, requiring them to manually evaluate potential candidates.",
+                "Limited Identity Assurance: Reddit's pseudonymous account system allows users to interact without publicly establishing their real-world identities, creating uncertainty when evaluating potential roommates.",
+              ],
+            },
+          ],
+        },
+        {
+          id: "secondary-research",
+          label: "Secondary research",
+          title: "Placeholder",
+          body: "Placeholder",
+          videos: [{ title: "Placeholder" }, { title: "Placeholder" }],
+          notes: [
+            { index: "01", title: "Placeholder", body: "Placeholder" },
+            { index: "02", title: "Placeholder", body: "Placeholder" },
+            { index: "03", title: "Placeholder", body: "Placeholder" },
+          ],
+        },
+        {
+          id: "user-interviews",
+          label: "User interviews",
+          title: "Placeholder",
+          body: "Placeholder",
+          slot: true,
+        },
+        {
+          id: "findings",
+          label: "Findings",
+          insights: [
+            {
+              title: "Platforms Verify Accounts, Not Identities",
+              body: "Common verification methods, such as email and phone verification, leave room for inauthentic accounts like bots, spam, and impersonators, weakening user trust in the platform.",
+            },
+            {
+              title: "Users Rely on Platforms Not Built for Roommate Search",
+              body: "Without roommate-specific search and matching tools, users must manually find, compare, and evaluate potential roommates, making the process time-consuming and inefficient.",
+            },
+            {
+              title: "Dedicated Roommate Platforms Feel Outdated and Inactive",
+              body: "Outdated interfaces can make platforms feel less trustworthy, discouraging users from engaging with potential roommates.",
+            },
+          ],
+        },
+      ],
+    },
     finalTitle: "PadPal",
-    impactTitle: "11→1 tables unified",
-    impactBody: "The recorded outcome for this project is 11→1 tables unified.",
+    finalBody: (
+      <>
+        The live PadPal product brings together a{" "}
+        <strong className="font-semibold text-[#1e1a15]">preference survey</strong> that filters candidates and ranks
+        compatible matches, and <strong className="font-semibold text-[#1e1a15]">identity verification</strong> that
+        confirms a user before they can connect.
+      </>
+    ),
+    impactLabel: "Reflection",
+    impactTitle: "What I Learned",
+    impactBody: "Placeholder",
+    aheadTitle: "Looking Ahead",
+    aheadBody: ["Placeholder"],
   },
   "tokyo-afterfall": {
+    editorial: true,
+    openTitle: "Accessibility Features for Visually Impaired Players",
+    facts: [
+      { label: "Timeline", value: "2 Weeks" },
+      { label: "Role", value: "Product Designer" },
+      { label: "Type", value: "Personal Project" },
+      { label: "Team", value: "Solo" },
+    ],
+    prototype: "/tokyo-prototype.mp4?v=2",
     overview:
       "Tokyo Afterfall is a handheld game menu concept designed to improve gameplay accessibility for players with visual impairments, including low vision, color vision deficiencies, and astigmatism. The project explores customizable accessibility settings that make essential gameplay information easier to perceive and interpret.",
     tags: ["Accessibility", "2D-Game Concept", "Game Menu"],
@@ -132,6 +284,7 @@ const layouts: Record<string, StudyLayout> = {
         {
           id: "accessibility-audit",
           label: "Accessibility Audit",
+          lead: true,
           body: "I conducted an accessibility audit of the Nintendo Switch console and 3 of its top 5 best-selling games to assess the availability and effectiveness of visual accessibility features for players with low vision and color vision deficiencies.",
           competitors: [
             {
@@ -214,6 +367,7 @@ const layouts: Record<string, StudyLayout> = {
         {
           id: "user-interviews",
           label: "User interviews",
+          board: true,
           title: "Listening to players with different visual needs.",
           body: "I conducted semi-structured interviews with 4 active gamers with visual impairments to understand how their visual needs shape handheld gameplay and where existing accessibility features fall short. I synthesized responses through affinity mapping to identify recurring patterns.",
         },
@@ -313,7 +467,7 @@ export function ReadingProgress() {
       aria-valuemax={100}
       aria-valuenow={0}
     >
-      <div ref={barRef} className="h-full w-full origin-left bg-[#fb0f0c]" style={{ transform: "scaleX(0)" }} />
+      <div ref={barRef} className="h-full w-full origin-left bg-[var(--brand)]" style={{ transform: "scaleX(0)" }} />
     </div>
   );
 }
@@ -539,6 +693,25 @@ function LoopingClip({
   );
 }
 
+function AuditPoint({ text }: { text: string }) {
+  const split = text.indexOf(": ");
+  if (split === -1) return text;
+  return (
+    <>
+      <span className="cs-audit-point">{text.slice(0, split)}</span>
+      {text.slice(split)}
+    </>
+  );
+}
+
+function MediaSlot({ label = "Image", className = "" }: { label?: string; className?: string }) {
+  return (
+    <div className={`cs-media-slot${className ? ` ${className}` : ""}`} role="img" aria-label={`${label} placeholder`}>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 function SolutionArrow({
   direction,
   label,
@@ -620,7 +793,7 @@ function SolutionCarousel({ items }: { items: NonNullable<StudyLayout["solutions
                   solutionVideo.test(slide.image) ? (
                     <LoopingClip
                       src={slide.image}
-                      alt={`${slide.title} in Tokyo Afterfall`}
+                      alt={slide.title}
                       sound={slide.sound}
                       active={slideIndex === index}
                     />
@@ -635,7 +808,9 @@ function SolutionCarousel({ items }: { items: NonNullable<StudyLayout["solutions
                       />
                     </figure>
                   )
-                ) : null}
+                ) : (
+                  <MediaSlot label="Image" />
+                )}
               </div>
             ))}
           </div>
@@ -775,8 +950,22 @@ function statusDot(tone: NonNullable<CaseStudy["status"]>["tone"]) {
   return "live-dot";
 }
 
+function FactValue({ value }: { value: string }) {
+  return (
+    <>
+      {value.split("\n").map((line, index) => (
+        <span key={line}>
+          {index > 0 ? <br /> : null}
+          {line}
+        </span>
+      ))}
+    </>
+  );
+}
+
 export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
   const layout = layouts[study.id];
+  const editorial = Boolean(layout?.editorial);
   const pageSections = [
     ...leadSections.filter((section) => section.id !== "background" || layout?.backgroundTitle),
     ...(layout?.solutions?.length ? [{ id: "solution", label: "Solution" }] : []),
@@ -787,16 +976,19 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
   ];
   const [active, setActive] = useState(pageSections[0].id);
   const next = cases.filter((item) => item.id !== study.id);
-  const visual = study.hero ?? (study.id === "tokyo-afterfall" && study.cover ? study.cover : study.image);
+  const visual = layout?.placeholderMedia
+    ? ""
+    : study.hero ?? (editorial && study.cover ? study.cover : study.image);
+  const heroSrc = layout?.placeholderMedia ? study.cover ?? "" : visual;
 
   useEffect(() => {
-    if (study.id !== "tokyo-afterfall") return;
+    if (!editorial) return;
     const previous = document.body.style.backgroundColor;
     document.body.style.backgroundColor = "#ffffff";
     return () => {
       document.body.style.backgroundColor = previous;
     };
-  }, [study.id]);
+  }, [editorial]);
 
   const sectionKey = pageSections.map((section) => section.id).join(" ");
 
@@ -841,20 +1033,20 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
   if (!layout) return null;
 
   return (
-    <div className={`min-h-screen ${study.id === "tokyo-afterfall" ? "cs-tokyo bg-white text-[#1e1a15]" : "bg-[#f7f7f5] text-[#1e1a15]"}`}>
+    <div className={`min-h-screen ${editorial ? "cs-tokyo bg-white text-[#1e1a15]" : "bg-[#f7f7f5] text-[#1e1a15]"}`}>
       <ReadingProgress />
 
-      <aside className={`${study.id === "tokyo-afterfall" ? "cs-tokyo-rail " : ""}fixed left-10 top-8 z-40 hidden w-[180px] min-[1280px]:block`}>
+      <aside className={`${editorial ? "cs-tokyo-rail " : ""}fixed left-10 top-8 z-40 hidden w-[180px] min-[1280px]:block`}>
         <Link
           to="/"
           state={{ view: "works" }}
           className={
-            study.id === "tokyo-afterfall"
+            editorial
               ? "cs-tokyo-back"
               : "mb-8 inline-flex items-center gap-1 rounded-full border border-[#e4e4e4] bg-white px-3 py-1.5 font-sans text-[13px] text-[#1e1a15] shadow-sm"
           }
         >
-          {study.id === "tokyo-afterfall" ? (
+          {editorial ? (
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M19 12H5" />
               <path d="m12 19-7-7 7-7" />
@@ -866,15 +1058,15 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
           )}
           Back
         </Link>
-        {study.id === "tokyo-afterfall" ? (
+        {editorial ? (
           <>
             <p className="cs-tokyo-rail-title">{study.client}</p>
-            <p className="cs-tokyo-rail-note">{study.title}</p>
+            <p className="cs-tokyo-rail-note">{layout.railNote ?? study.title}</p>
           </>
         ) : null}
-        <nav className={study.id === "tokyo-afterfall" ? "cs-tokyo-toc" : "flex flex-col"} aria-label="Case study sections">
-          {study.id === "tokyo-afterfall" ? <span className="cs-tokyo-toc-track" aria-hidden="true" /> : null}
-          <div className={study.id === "tokyo-afterfall" ? "cs-tokyo-toc-links" : "contents"}>
+        <nav className={editorial ? "cs-tokyo-toc" : "flex flex-col"} aria-label="Case study sections">
+          {editorial ? <span className="cs-tokyo-toc-track" aria-hidden="true" /> : null}
+          <div className={editorial ? "cs-tokyo-toc-links" : "contents"}>
           {pageSections.map((section) => {
             const researchOpen =
               section.id === "research" &&
@@ -886,7 +1078,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 href={`#${section.id}`}
                 aria-current={isActive ? "location" : undefined}
                 className={
-                  study.id === "tokyo-afterfall"
+                  editorial
                     ? "cs-tokyo-toc-link"
                     : `py-1.5 font-sans text-[15px] tracking-normal no-underline transition-colors ${
                         isActive ? "font-medium text-[#1e1a15]" : "text-[#b0b0b0] hover:text-[#1e1a15]"
@@ -901,36 +1093,30 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         </nav>
       </aside>
 
-      <div className={study.id === "tokyo-afterfall" ? "cs-tokyo-main" : "contents"}>
-      <div className="cs-hero-visual" aria-hidden="true">
-        <CoverMedia src={visual} className="aspect-video w-full object-cover" />
+      <div className={editorial ? "cs-tokyo-main" : "contents"}>
+      <div className="cs-hero-visual" aria-hidden={heroSrc ? true : undefined}>
+        {heroSrc ? <CoverMedia src={heroSrc} className="aspect-video w-full object-cover" /> : <MediaSlot label="Image" />}
       </div>
-      {study.id === "tokyo-afterfall" ? (
+      {editorial && layout.openTitle ? (
         <header className="cs-tokyo-open">
-          <p className="cs-tokyo-kicker">Tokyo Afterfall</p>
-          <h1 className="cs-tokyo-open-title">Accessibility Features for Visually Impaired Players</h1>
-          <dl className="cs-tokyo-facts">
-            <div>
-              <dt>Timeline</dt>
-              <dd>2 Weeks</dd>
-            </div>
-            <div>
-              <dt>Role</dt>
-              <dd>Product Designer</dd>
-            </div>
-            <div>
-              <dt>Type</dt>
-              <dd>Personal Project</dd>
-            </div>
-            <div>
-              <dt>Team</dt>
-              <dd>Solo</dd>
-            </div>
-          </dl>
+          <p className="cs-tokyo-kicker">{study.client}</p>
+          <h1 className="cs-tokyo-open-title">{layout.openTitle}</h1>
+          {layout.facts?.length ? (
+            <dl className="cs-tokyo-facts">
+              {layout.facts.map((item) => (
+                <div key={item.label}>
+                  <dt>{item.label}</dt>
+                  <dd>
+                    <FactValue value={item.value} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
         </header>
       ) : null}
       <main className="cs-scroll-body mx-auto pb-28">
-        {study.id === "tokyo-afterfall" ? null : (
+        {editorial ? null : (
         <header className="mb-[72px]">
           <p className="mb-5 font-sans text-[17px] font-semibold tracking-[-0.01em] text-[#1e1a15]">
             {study.client}
@@ -958,19 +1144,19 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         )}
 
         <section id="overview" className="mb-20 scroll-mt-8">
-          {study.id === "tokyo-afterfall" ? (
+          {editorial ? (
             <div className="cs-tokyo-overview">
-              <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+              <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
                 Overview
               </p>
               <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
-                Tokyo Afterfall
+                {study.client}
               </h2>
               <p className="cs-tokyo-overview-body">{layout.overview ?? study.desc}</p>
             </div>
           ) : (
             <>
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Overview
           </p>
             <p className="mb-5 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.overview ?? study.desc}</p>
@@ -995,7 +1181,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
         {layout.backgroundTitle ? (
         <section id="background" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "background" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "background" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Background
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -1023,14 +1209,14 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         ) : null}
 
         <section id="problem" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "problem" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "problem" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Problem
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
             {layout.problemTitle}
           </h2>
           <p className="mb-5 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.problemBody}</p>
-          <div className={`rounded-xl border p-8${study.id === "tokyo-afterfall" ? " cs-spotlight border-[#1e1a15]/[0.08] bg-white" : " border-[#0066cc]/10 bg-[#0066cc]/[0.04]"}`}>
+          <div className={`rounded-xl border p-8${editorial ? " cs-spotlight border-[#1e1a15]/[0.08] bg-white" : " border-[#0066cc]/10 bg-[#0066cc]/[0.04]"}`}>
             <p className="mb-3 flex items-center gap-2.5 font-mono text-[12px] font-medium tracking-normal text-[#5a5248]">
               {layout.northStarLabel ? null : (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1047,7 +1233,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
         {layout.solutions?.length ? (
           <section id="solution" className="mb-20 scroll-mt-8">
-            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "solution" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "solution" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
               Solution
             </p>
             <SolutionCarousel items={layout.solutions} />
@@ -1056,12 +1242,12 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
         {layout.research ? (
           <section id="research" className="mb-20 scroll-mt-8">
-            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "research" || layout.research.groups.some((group) => group.id === active) ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "research" || layout.research.groups.some((group) => group.id === active) ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
               Research
             </p>
             {layout.research.groups.map((group, index) => (
               <div key={group.id} id={group.id} className={`scroll-mt-8 ${index > 0 ? "mt-14" : ""}`}>
-                {group.id === "accessibility-audit" ? (
+                {group.lead ? (
                   <h3 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
                     {group.label}
                   </h3>
@@ -1083,21 +1269,31 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 ) : null}
                 {group.videos ? (
                   <div className="cs-watch">
-                    {group.videos.map((video) => (
-                      <a
-                        key={video.href}
-                        className="cs-watch-link"
-                        href={video.href}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {video.title}
+                    {group.videos.map((video, videoIndex) => {
+                      const icon = (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                           <path d="M7 17 17 7" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
                           <path d="M9 7h8v8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                      </a>
-                    ))}
+                      );
+                      return video.href ? (
+                        <a
+                          key={video.href}
+                          className="cs-watch-link"
+                          href={video.href}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {video.title}
+                          {icon}
+                        </a>
+                      ) : (
+                        <div key={`${video.title}-${videoIndex}`} className="cs-watch-link is-placeholder">
+                          {video.title}
+                          {icon}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : null}
                 {group.notes ? (
@@ -1111,7 +1307,8 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                     ))}
                   </ul>
                 ) : null}
-                {group.id === "user-interviews" ? <InterviewExplorer /> : null}
+                {group.board ? <InterviewExplorer /> : null}
+                {group.slot ? <MediaSlot label="Image" className="cs-media-slot-board" /> : null}
                 {group.image ? (
                   <ExpandableImage
                     src={group.image}
@@ -1120,30 +1317,44 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 ) : null}
                 {group.competitors ? (
                   <ul className="cs-audit-grid">
-                    {group.competitors.map((competitor) => (
-                      <li key={competitor.name} className="cs-audit-card cs-spotlight">
+                    {group.competitors.map((competitor, competitorIndex) => (
+                      <li key={`${group.id}-${competitorIndex}`} className="cs-audit-card cs-spotlight">
                         <div>
                           <h3>{competitor.name}</h3>
-                          <p>{competitor.body}</p>
+                          {competitor.body ? <p>{competitor.body}</p> : null}
                         </div>
-                        <img
-                          src={competitor.cover}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          className="cs-audit-cover"
-                        />
+                        {competitor.cover ? (
+                          competitor.logo ? (
+                            <div className={`cs-audit-logo${competitor.logoSurface === "dark" ? " is-dark" : ""}${competitor.logoFit === "word" ? " is-word" : ""}`}>
+                              <img src={competitor.cover} alt="" />
+                            </div>
+                          ) : (
+                            <img
+                              src={competitor.cover}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                              className="cs-audit-cover"
+                            />
+                          )
+                        ) : (
+                          <MediaSlot label="Image" className="cs-audit-cover" />
+                        )}
                         <div className="cs-audit-foot">
-                          <h3>Relevant Accessibility Features</h3>
+                          <h3>{group.featureLabel ?? "Relevant Accessibility Features"}</h3>
                           <ul>
                             {competitor.features.map((feature) => (
-                              <li key={feature}>{feature}</li>
+                              <li key={feature}>
+                                <AuditPoint text={feature} />
+                              </li>
                             ))}
                           </ul>
-                          <h3>Limitations</h3>
+                          <h3>{group.limitationLabel ?? "Limitations"}</h3>
                           <ul>
                             {competitor.limitations.map((limitation) => (
-                              <li key={limitation}>{limitation}</li>
+                              <li key={limitation}>
+                                <AuditPoint text={limitation} />
+                              </li>
                             ))}
                           </ul>
                         </div>
@@ -1159,7 +1370,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                         className="cs-spotlight flex flex-col gap-3.5 rounded-xl border border-[#1e1a15]/[0.08] bg-white px-3 pb-4 pt-3"
                       >
                         <div className="flex h-[120px] items-center justify-center overflow-hidden rounded-lg bg-[#f7f7f5] px-4 py-[18px]">
-                          <InsightSnap kind={insight.visual} />
+                          {insight.visual ? <InsightSnap kind={insight.visual} /> : <MediaSlot label="Image" className="cs-media-slot-fill" />}
                         </div>
                         <div className="px-3 pb-2">
                           <p className="mb-2 font-sans text-[16px] font-semibold leading-[1.3] text-[#1e1a15]">{insight.title}</p>
@@ -1175,24 +1386,26 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         ) : null}
 
         <section id="final-product" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "final-product" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "final-product" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Final product
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
             {layout.finalTitle}
           </h2>
           <p className="mb-6 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.finalBody ?? study.desc}</p>
-          {study.id === "tokyo-afterfall" ? (
-            <LoopingClip src="/tokyo-prototype.mp4?v=2" alt={study.title} playback />
-          ) : (
+          {layout.prototype ? (
+            <LoopingClip src={layout.prototype} alt={study.title} playback />
+          ) : visual ? (
             <figure className="m-0">
               <CoverMedia src={visual} alt={study.title} className="w-full rounded-2xl" />
             </figure>
+          ) : (
+            <MediaSlot label="Image" />
           )}
         </section>
 
         <section id="impact" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "impact" ? "text-[#fb0f0c]" : "text-[#8a8a8a]"}`}>
+          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "impact" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             {layout.impactLabel ?? "Impact"}
           </p>
           {layout.impactTitle ? (
@@ -1219,7 +1432,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
           ) : null}
         </section>
 
-        {study.id === "tokyo-afterfall" ? (
+        {editorial ? (
           <p className="cs-conclusion">conclusion</p>
         ) : (
           <p className="mt-16 text-center font-sans text-2xl font-medium tracking-[-0.03em] text-[#1e1a15]/25">thanks for reading</p>
