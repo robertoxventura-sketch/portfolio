@@ -1030,7 +1030,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
             {layout.problemTitle}
           </h2>
           <p className="mb-5 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.problemBody}</p>
-          <div className="rounded-xl border border-[#0066cc]/10 bg-[#0066cc]/[0.04] p-8">
+          <div className={`rounded-xl border p-8${study.id === "tokyo-afterfall" ? " cs-spotlight border-[#1e1a15]/[0.08] bg-white" : " border-[#0066cc]/10 bg-[#0066cc]/[0.04]"}`}>
             <p className="mb-3 flex items-center gap-2.5 font-mono text-[12px] font-medium tracking-normal text-[#5a5248]">
               {layout.northStarLabel ? null : (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1061,9 +1061,15 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
             </p>
             {layout.research.groups.map((group, index) => (
               <div key={group.id} id={group.id} className={`scroll-mt-8 ${index > 0 ? "mt-14" : ""}`}>
-                <h2 className="mb-4 font-mono text-[12px] font-medium tracking-normal text-[#5a5248]">
-                  {group.label}
-                </h2>
+                {group.id === "accessibility-audit" ? (
+                  <h3 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
+                    {group.label}
+                  </h3>
+                ) : (
+                  <h2 className="mb-4 font-mono text-[12px] font-medium tracking-normal text-[#5a5248]">
+                    {group.label}
+                  </h2>
+                )}
                 {group.title ? (
                   <h3 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
                     {group.title}
@@ -1097,7 +1103,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 {group.notes ? (
                   <ul className="cs-note-grid">
                     {group.notes.map((note) => (
-                      <li key={note.index} className="cs-note-card">
+                      <li key={note.index} className="cs-note-card cs-spotlight">
                         <p className="cs-note-index">{note.index}</p>
                         <h3>{note.title}</h3>
                         <p>{note.body}</p>
@@ -1115,7 +1121,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 {group.competitors ? (
                   <ul className="cs-audit-grid">
                     {group.competitors.map((competitor) => (
-                      <li key={competitor.name} className="cs-audit-card">
+                      <li key={competitor.name} className="cs-audit-card cs-spotlight">
                         <div>
                           <h3>{competitor.name}</h3>
                           <p>{competitor.body}</p>
@@ -1150,7 +1156,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                     {group.insights.map((insight) => (
                       <li
                         key={insight.title}
-                        className="flex flex-col gap-3.5 rounded-xl border border-[#1e1a15]/[0.08] bg-white px-3 pb-4 pt-3"
+                        className="cs-spotlight flex flex-col gap-3.5 rounded-xl border border-[#1e1a15]/[0.08] bg-white px-3 pb-4 pt-3"
                       >
                         <div className="flex h-[120px] items-center justify-center overflow-hidden rounded-lg bg-[#f7f7f5] px-4 py-[18px]">
                           <InsightSnap kind={insight.visual} />
