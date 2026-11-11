@@ -102,15 +102,8 @@ export function CaseGrid({
                   : ""
             }`}
           >
-            <div
-              className={`aspect-video w-full shrink-0 overflow-hidden rounded-lg ${
-                c.id === "one-care" ? "bg-black" : ""
-              }`}
-            >
-              <CoverMedia
-                src={c.cover ?? c.image}
-                className={`work-thumb h-full w-full ${c.id === "one-care" ? "object-contain" : "object-cover"}`}
-              />
+            <div className="aspect-video w-full shrink-0 overflow-hidden rounded-lg">
+              <CoverMedia src={c.cover ?? c.image} className="work-thumb h-full w-full object-cover" />
             </div>
             <div className="flex flex-col gap-3.5 px-3.5 pb-3 pt-[18px]">
               <div className="flex items-center justify-between gap-2">

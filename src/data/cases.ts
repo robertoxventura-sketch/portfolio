@@ -53,16 +53,4 @@ export const cases: CaseStudy[] = [
     hoverTags: ["Website Design", "Reunion Planning"],
     status: { label: "Delivered", tone: "delivered" },
   },
-  {
-    id: "one-care",
-    client: "One Care",
-    title: "A reimagined urgent care check-in experience.",
-    desc: "One Care is a reimagined urgent care experience hosted in a patient portal. It gives patients a remote check-in, a stage-by-stage estimate of the visit, and a waiting-room health score so they can arrive informed and spend less time in the lobby.",
-    metrics: [],
-    image: "/one-care-cover.webp",
-    hoverSummary:
-      "A patient portal concept for remote urgent-care check-in, a stage-by-stage wait estimate, and a waiting-room health score.",
-    hoverTags: ["Patient Portal App"],
-    status: { label: "Concept", tone: "concept" },
-  },
 ];

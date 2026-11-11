@@ -290,7 +290,7 @@ const layouts: Record<string, StudyLayout> = {
             {
               name: "Nintendo Switch",
               cover: "/competitors/switch-cover.png",
-              body: "The Nintendo Switch offers limited system-level accessibility settings that can be used during gameplay.",
+              body: "",
               features: ["Display Color Customization", "Screen Zoom"],
               limitations: [
                 "Display colors are limited to inverted colors and grayscale, without dedicated colorblind filters.",
@@ -301,7 +301,7 @@ const layouts: Record<string, StudyLayout> = {
             {
               name: "The Legend of Zelda: Breath of the Wild",
               cover: "/competitors/breath-of-the-wild-cover.png",
-              body: "Breath of the Wild offers HUD customization and audio cues to help players perceive gameplay information.",
+              body: "",
               features: ["Normal / Pro HUD Modes", "Audio Cues"],
               limitations: [
                 "Pro HUD reduces visual clutter by hiding nonessential HUD elements, but does not allow players to resize individual interface elements.",
@@ -312,7 +312,7 @@ const layouts: Record<string, StudyLayout> = {
             {
               name: "Super Mario Odyssey",
               cover: "/competitors/mario-odyssey-cover.jpg",
-              body: "Super Mario Odyssey offers Assist Mode to reduce gameplay difficulty through additional guidance and support.",
+              body: "",
               features: ["Assist Mode"],
               limitations: [
                 "Assist Mode provides navigational guidance and reduces gameplay difficulty but does not offer visual interface customization.",
@@ -322,7 +322,7 @@ const layouts: Record<string, StudyLayout> = {
             {
               name: "Super Smash Bros. Ultimate",
               cover: "/competitors/smash-bros-cover.jpg",
-              body: "Super Smash Bros. Ultimate offers visual indicators to help players identify characters during combat.",
+              body: "",
               features: ["Team Highlight"],
               limitations: [
                 "Team Highlight is limited to team-based matches and does not provide consistent character highlighting across all game modes.",
@@ -1033,7 +1033,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
   if (!layout) return null;
 
   return (
-    <div className={`min-h-screen ${editorial ? "cs-tokyo bg-white text-[#1e1a15]" : "bg-[#f7f7f5] text-[#1e1a15]"}`}>
+    <div className={`min-h-screen ${editorial ? "cs-tokyo bg-white text-[#1e1a15]" : "bg-[#f7f7f5] text-[#1e1a15]"} ${study.id === "table-redesign" ? "cs-padpal" : ""}`}>
       <ReadingProgress />
 
       <aside className={`${editorial ? "cs-tokyo-rail " : ""}fixed left-10 top-8 z-40 hidden w-[180px] min-[1280px]:block`}>
