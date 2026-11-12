@@ -1,11 +1,13 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-export type DockSection = "home" | "works" | "profile";
+export type DockSection = "home" | "works";
 
-const RESUME_HREF =
-  "https://drive.google.com/file/d/1V5zcLX-MAGb667flbXnNJDQAa8KGv6BF/view?usp=sharing";
+const RESUMES = [
+  { label: "Product Design", href: "/resumes/Roberto_Ventura_Product_Designer_Resume.pdf" },
+  { label: "Product Management", href: "/resumes/Roberto_Ventura_Product_Manager_Resume.pdf" },
+];
 const LINKEDIN_HREF = "https://www.linkedin.com/in/roberto-ventura-745b18207/";
 const CONTACT_HREF = "mailto:robertoxventura@gmail.com";
 
@@ -24,12 +26,14 @@ function DockItem({
   active,
   onClick,
   href,
+  expanded,
   children,
 }: {
   label: string;
   active?: boolean;
   onClick?: () => void;
   href?: string;
+  expanded?: boolean;
   children: ReactNode;
 }) {
   const reduceMotion = useReducedMotion();
@@ -74,6 +78,8 @@ function DockItem({
       type="button"
       aria-label={label}
       aria-current={active ? "page" : undefined}
+      aria-expanded={expanded}
+      aria-haspopup={expanded === undefined ? undefined : "menu"}
       onClick={onClick}
       className={className}
     >
@@ -82,16 +88,80 @@ function DockItem({
   );
 }
 
+function ResumeMenu({ compact = false, children }: { compact?: boolean; children?: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      {open ? (
+        <motion.div
+          role="menu"
+          aria-label="Resumes"
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.86, y: 8, x: "-50%" }}
+          animate={{ opacity: 1, scale: 1, y: 0, x: "-50%" }}
+          transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 560, damping: 34, mass: 0.6 }}
+          style={{ transformOrigin: "bottom center" }}
+          className="absolute bottom-[calc(100%+8px)] left-1/2 z-20 min-w-[220px] overflow-hidden rounded-[14px] border border-black/[0.08] bg-white shadow-[0_0_0_0.5px_rgba(30,26,21,0.06),0_12px_32px_rgba(30,26,21,0.16)] [font-family:Geist,Inter,system-ui,sans-serif]"
+        >
+          {RESUMES.map((resume, index) => (
+            <a
+              key={resume.href}
+              role="menuitem"
+              href={resume.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className={`flex h-11 items-center px-4 text-[15px] font-medium tracking-[-0.011em] text-[#1e1a15] no-underline hover:bg-[#1e1a15]/[0.04] active:bg-[#1e1a15]/[0.08] ${
+                index > 0 ? "border-t border-[#1e1a15]/10" : ""
+              }`}
+            >
+              {resume.label}
+            </a>
+          ))}
+        </motion.div>
+      ) : null}
+      {compact ? (
+        <MiniDockItem
+          label="Resume"
+          icon="/nav/icon-resume.webp"
+          expanded={open}
+          onClick={() => setOpen((current) => !current)}
+        />
+      ) : (
+        <DockItem label="Resume" expanded={open} onClick={() => setOpen((current) => !current)}>
+          {children}
+        </DockItem>
+      )}
+    </div>
+  );
+}
+
 export function FolderDock({
   active,
   onHome,
   onWorks,
-  onProfile,
 }: {
   active: DockSection | null;
   onHome: () => void;
   onWorks: () => void;
-  onProfile: () => void;
 }) {
   return (
     <nav
@@ -107,17 +177,14 @@ export function FolderDock({
         <DockItem label="Work" active={active === "works"} onClick={onWorks}>
           <img src="/nav/icon-work.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
-        <DockItem label="Resume" href={RESUME_HREF}>
+        <ResumeMenu>
           <img src="/nav/icon-resume.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
-        </DockItem>
+        </ResumeMenu>
         <DockItem label="LinkedIn" href={LINKEDIN_HREF}>
           <img src="/nav/icon-linkedin.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
         <DockItem label="Email" href={CONTACT_HREF}>
           <img src="/nav/icon-email.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
-        </DockItem>
-        <DockItem label="Profile" active={active === "profile"} onClick={onProfile}>
-          <img src="/nav/icon-profile.webp" alt="" width={256} height={256} decoding="async" className={iconClass} />
         </DockItem>
       </div>
     </nav>
@@ -148,12 +215,14 @@ function MiniDockItem({
   glyph,
   href,
   onClick,
+  expanded,
 }: {
   label: string;
   icon?: string;
   glyph?: string;
   href?: string;
   onClick?: () => void;
+  expanded?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const className =
@@ -182,7 +251,11 @@ function MiniDockItem({
           transition={iconSpring}
         />
       )}
-      <span className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1e1a15] px-2 py-1 font-sans text-[11px] font-medium leading-none text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+      <span
+        className={`pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1e1a15] px-2 py-1 font-sans text-[11px] font-medium leading-none text-white opacity-0 transition-opacity duration-150 ${
+          expanded ? "" : "group-hover:opacity-100 group-focus-visible:opacity-100"
+        }`}
+      >
         {label}
       </span>
     </>
@@ -203,7 +276,14 @@ function MiniDockItem({
   }
 
   return (
-    <button type="button" aria-label={label} onClick={onClick} className={className}>
+    <button
+      type="button"
+      aria-label={label}
+      aria-expanded={expanded}
+      aria-haspopup={expanded === undefined ? undefined : "menu"}
+      onClick={onClick}
+      className={className}
+    >
       {body}
     </button>
   );
@@ -235,10 +315,9 @@ export function CaseStudyDock() {
       >
         <MiniDockItem label="Home" glyph="🏠" onClick={() => navigate("/")} />
         <MiniDockItem label="Work" icon="/nav/icon-work.webp" onClick={() => navigate("/", { state: { view: "works" } })} />
-        <MiniDockItem label="Resume" icon="/nav/icon-resume.webp" href={RESUME_HREF} />
+        <ResumeMenu compact />
         <MiniDockItem label="LinkedIn" icon="/nav/icon-linkedin.webp" href={LINKEDIN_HREF} />
         <MiniDockItem label="Email" icon="/nav/icon-email.webp" href={CONTACT_HREF} />
-        <MiniDockItem label="Profile" icon="/nav/icon-profile.webp" onClick={() => navigate("/", { state: { view: "profile" } })} />
       </motion.nav>
     </div>
   );

@@ -22,6 +22,8 @@ type StudyLayout = {
   editorial?: boolean;
   placeholderMedia?: boolean;
   openTitle?: string;
+  liveHref?: string;
+  liveLabel?: string;
   railNote?: string;
   facts?: { label: string; value: string }[];
   prototype?: string;
@@ -69,10 +71,12 @@ const layouts: Record<string, StudyLayout> = {
     editorial: true,
     placeholderMedia: true,
     openTitle: "Redesigning the Roommate Matching Experience",
+    liveHref: "https://padpal.onrender.com/",
+    liveLabel: "View live product",
     railNote: "Redesigning the roommate matching experience.",
     facts: [
-      { label: "Timeline", value: "Oct 2025 – Dec 2025" },
-      { label: "Role", value: "Product Designer" },
+      { label: "Timeline", value: "August 2025 – Present" },
+      { label: "Role", value: "Product Designer\nSoftware Engineer" },
       { label: "Type", value: "Web Application" },
       { label: "Team", value: "Roberto Ventura\nHiyab Woldegebriel" },
     ],
@@ -81,7 +85,7 @@ const layouts: Record<string, StudyLayout> = {
     tags: ["Responsive Web App"],
     meta: [
       { label: "My Role", value: "Product Designer" },
-      { label: "Timeline", value: "Oct 2025 – Dec 2025" },
+      { label: "Timeline", value: "August 2025 – Present" },
       { label: "Roles", value: "Product Designer\nSoftware Engineer" },
       { label: "Team", value: "Roberto Ventura\nHiyab Woldegebriel" },
     ],
@@ -1099,7 +1103,17 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
       </div>
       {editorial && layout.openTitle ? (
         <header className="cs-tokyo-open">
-          <p className="cs-tokyo-kicker">{study.client}</p>
+          {layout.liveHref ? (
+            <div className="cs-tokyo-open-bar">
+              <p className="cs-tokyo-kicker">{study.client}</p>
+              <a className="cs-live-btn" href={layout.liveHref} target="_blank" rel="noopener noreferrer">
+                {layout.liveLabel ?? "View live product"}
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          ) : (
+            <p className="cs-tokyo-kicker">{study.client}</p>
+          )}
           <h1 className="cs-tokyo-open-title">{layout.openTitle}</h1>
           {layout.facts?.length ? (
             <dl className="cs-tokyo-facts">
@@ -1146,7 +1160,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         <section id="overview" className="mb-20 scroll-mt-8">
           {editorial ? (
             <div className="cs-tokyo-overview">
-              <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+              <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
                 Overview
               </p>
               <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -1156,7 +1170,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
             </div>
           ) : (
             <>
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+          <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "overview" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Overview
           </p>
             <p className="mb-5 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.overview ?? study.desc}</p>
@@ -1181,7 +1195,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
         {layout.backgroundTitle ? (
         <section id="background" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "background" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+          <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "background" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Background
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -1209,7 +1223,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         ) : null}
 
         <section id="problem" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "problem" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+          <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "problem" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Problem
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -1233,7 +1247,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
         {layout.solutions?.length ? (
           <section id="solution" className="mb-20 scroll-mt-8">
-            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "solution" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+            <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "solution" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
               Solution
             </p>
             <SolutionCarousel items={layout.solutions} />
@@ -1242,7 +1256,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
 
         {layout.research ? (
           <section id="research" className="mb-20 scroll-mt-8">
-            <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "research" || layout.research.groups.some((group) => group.id === active) ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+            <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "research" || layout.research.groups.some((group) => group.id === active) ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
               Research
             </p>
             {layout.research.groups.map((group, index) => (
@@ -1386,7 +1400,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         ) : null}
 
         <section id="final-product" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "final-product" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+          <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "final-product" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             Final product
           </p>
           <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
@@ -1405,7 +1419,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
         </section>
 
         <section id="impact" className="mb-20 scroll-mt-8">
-          <p className={`mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "impact" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+          <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "impact" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
             {layout.impactLabel ?? "Impact"}
           </p>
           {layout.impactTitle ? (

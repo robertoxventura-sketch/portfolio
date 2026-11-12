@@ -674,6 +674,44 @@ body {
   text-transform: uppercase;
 }
 
+.cs-tokyo-open-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.cs-live-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 0;
+  padding: 7px 10px;
+  border: 1px solid rgba(30, 26, 21, 0.14);
+  border-radius: 6px;
+  background: #fff;
+  color: #1e1a15;
+  font-family: var(--cs-text);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-align: left;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background 200ms, color 200ms, border-color 200ms;
+}
+
+.cs-live-btn:hover,
+.cs-live-btn:focus-visible {
+  background: #4285f4;
+  border-color: #4285f4;
+  color: #fff;
+}
+
 .cs-tokyo-open-title {
   width: 100%;
   margin: 10px 0 0;
@@ -685,6 +723,11 @@ body {
   line-height: 1.15;
   text-align: left;
   white-space: nowrap;
+}
+
+.cs-padpal .cs-section-label {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .cs-tokyo-facts {

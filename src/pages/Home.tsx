@@ -3,11 +3,10 @@ import { useLocation } from "react-router-dom";
 import { CaseGrid } from "../components/CaseGrid";
 import { FolderDock } from "../components/FolderDock";
 import { Hero } from "../components/Hero";
-import { ProfilePanel } from "../components/ProfilePanel";
 import { cases } from "../data/cases";
 import { isVideoSrc, posterSrc, usePrefersReducedMotion } from "../lib/media";
 
-type HomeView = "hero" | "hero-leaving" | "works" | "works-leaving" | "profile";
+type HomeView = "hero" | "hero-leaving" | "works" | "works-leaving";
 
 function CoverPreload() {
   const reduce = usePrefersReducedMotion();
@@ -49,7 +48,6 @@ function CoverPreload() {
 function viewFromLocation(state: unknown): HomeView {
   const requested = (state as { view?: string } | null)?.view;
   if (requested === "works") return "works";
-  if (requested === "profile") return "profile";
   return "hero";
 }
 
@@ -78,19 +76,6 @@ export function Home() {
       return;
     }
     setView("works");
-  }, []);
-
-  const goToProfile = useCallback(() => {
-    const current = viewRef.current;
-    if (current === "profile" || current === "hero-leaving" || current === "works-leaving") return;
-    window.scrollTo({ top: 0 });
-    if (current === "hero") {
-      setView("hero-leaving");
-      window.clearTimeout(leaveTimer.current);
-      leaveTimer.current = window.setTimeout(() => setView("profile"), 310);
-      return;
-    }
-    setView("profile");
   }, []);
 
   const goToHero = useCallback(() => {
@@ -225,19 +210,10 @@ export function Home() {
         onSettled={onWorksSettled}
       />
 
-      {view === "profile" && <ProfilePanel />}
-
       <FolderDock
-        active={
-          view === "works" || view === "works-leaving"
-            ? "works"
-            : view === "profile"
-              ? "profile"
-              : "home"
-        }
+        active={view === "works" || view === "works-leaving" ? "works" : "home"}
         onHome={goToHome}
         onWorks={goToWorks}
-        onProfile={goToProfile}
       />
 
       <div id="slide-1" className="scroll-mt-20 h-px" />
