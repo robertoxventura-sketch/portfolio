@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { cases, type CaseStudy } from "../data/cases";
 import { posterSrc, useNearViewport, usePrefersReducedMotion } from "../lib/media";
 import { CoverMedia } from "./CoverMedia";
 import { CaseStudyDock } from "./FolderDock";
-import { InterviewExplorer } from "./InterviewExplorer";
+import { InformationArchitecture, InterviewExplorer } from "./InterviewExplorer";
 
 const leadSections = [
   { id: "overview", label: "Overview" },
@@ -37,7 +37,7 @@ type StudyLayout = {
   problemBody: ReactNode;
   northStarLabel?: string;
   northStar: string;
-  solutions?: { title: string; body: string; image?: string; sound?: boolean }[];
+  solutions?: { title: string; body: string; image?: string; sound?: boolean; frame?: string; playback?: boolean }[];
   research?: {
     groups: {
       id: string;
@@ -64,6 +64,7 @@ type StudyLayout = {
   impactBody: string;
   aheadTitle?: string;
   aheadBody?: string[];
+  synthesis?: { title: string; body: string };
 };
 
 const layouts: Record<string, StudyLayout> = {
@@ -99,6 +100,9 @@ const layouts: Record<string, StudyLayout> = {
       {
         title: "Compatibility-Based Matching",
         body: "Users complete a preference survey that establishes essential living requirements and lifestyle preferences. Essential criteria filter out incompatible candidates, while weighted compatibility scores rank the remaining potential roommates based on how closely their preferences align.",
+        image: "/padpal-preference-survey.mp4",
+        frame: "1920 / 1140",
+        playback: true,
       },
       {
         title: "Mandatory Identity Verification",
@@ -180,18 +184,6 @@ const layouts: Record<string, StudyLayout> = {
           ],
         },
         {
-          id: "secondary-research",
-          label: "Secondary research",
-          title: "Placeholder",
-          body: "Placeholder",
-          videos: [{ title: "Placeholder" }, { title: "Placeholder" }],
-          notes: [
-            { index: "01", title: "Placeholder", body: "Placeholder" },
-            { index: "02", title: "Placeholder", body: "Placeholder" },
-            { index: "03", title: "Placeholder", body: "Placeholder" },
-          ],
-        },
-        {
           id: "user-interviews",
           label: "User interviews",
           title: "Placeholder",
@@ -232,6 +224,10 @@ const layouts: Record<string, StudyLayout> = {
     impactBody: "Placeholder",
     aheadTitle: "Looking Ahead",
     aheadBody: ["Placeholder"],
+    synthesis: {
+      title: "Affinity Mapping + Information Architecture",
+      body: "I created an in-depth user flow and an information architecture with affinity mapping to explore potential versions of PadPal. This process ensured that the app effectively addressed every stage of the user journey, from onboarding to user interactions, creating a seamless and intuitive experience.",
+    },
   },
   "tokyo-afterfall": {
     editorial: true,
@@ -431,6 +427,17 @@ const layouts: Record<string, StudyLayout> = {
 
 const solutionVideo = /\.(mov|mp4|webm|m4v)(\?.*)?$/i;
 
+function setProgressReveal(bar: HTMLElement, progress: number) {
+  const amount = Math.min(1, Math.max(0, progress));
+  bar.style.clipPath = `inset(0 ${(1 - amount) * 100}% 0 0)`;
+}
+
+function setVideoScrub(bar: HTMLElement, thumb: HTMLElement | null, progress: number) {
+  const amount = Math.min(1, Math.max(0, progress));
+  setProgressReveal(bar, amount);
+  if (thumb) thumb.style.left = `${amount * 100}%`;
+}
+
 export function ReadingProgress() {
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -445,7 +452,7 @@ export function ReadingProgress() {
         ? Math.max(0, window.scrollY + impact.getBoundingClientRect().top - 32)
         : document.documentElement.scrollHeight - window.innerHeight;
       const progress = end > 0 ? Math.min(1, Math.max(0, window.scrollY / end)) : 1;
-      bar.style.transform = `scaleX(${progress})`;
+      setProgressReveal(bar, progress);
       bar.parentElement?.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
     };
     const onScroll = () => {
@@ -471,7 +478,7 @@ export function ReadingProgress() {
       aria-valuemax={100}
       aria-valuenow={0}
     >
-      <div ref={barRef} className="h-full w-full origin-left bg-[var(--brand)]" style={{ transform: "scaleX(0)" }} />
+      <div ref={barRef} className="cs-progress-fill h-full w-full bg-[var(--brand)]" style={{ clipPath: "inset(0 100% 0 0)" }} />
     </div>
   );
 }
@@ -482,22 +489,44 @@ function LoopingClip({
   sound = false,
   active = true,
   playback = false,
+  frame,
+  playInView = false,
 }: {
   src: string;
   alt: string;
   sound?: boolean;
   active?: boolean;
   playback?: boolean;
+  frame?: string;
+  playInView?: boolean;
 }) {
   const [videoRef, near] = useNearViewport<HTMLVideoElement>("480px");
   const reduce = usePrefersReducedMotion();
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(playInView);
   const [muted, setMuted] = useState(true);
   const [requested, setRequested] = useState(false);
+  const [inView, setInView] = useState(!playInView);
   const loadVideo = near && (!reduce || requested);
   const activeRef = useRef(active);
+  const inViewRef = useRef(!playInView);
+  const userPausedRef = useRef(false);
   const progressRef = useRef<HTMLSpanElement>(null);
+  const thumbRef = useRef<HTMLSpanElement>(null);
+  const scrubRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
   activeRef.current = active;
+  inViewRef.current = inView;
+
+  useEffect(() => {
+    if (!playInView) return;
+    const node = videoRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setInView(Boolean(entry?.isIntersecting));
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [playInView, videoRef]);
 
   useEffect(() => {
     if (reduce) setPaused(true);
@@ -529,7 +558,7 @@ function LoopingClip({
       video.src = src;
     }
     const play = () => {
-      if (!activeRef.current) return;
+      if (!activeRef.current || !inViewRef.current || userPausedRef.current) return;
       void video.play().catch(() => setPaused(true));
     };
     if (!reduce || requested) {
@@ -546,13 +575,14 @@ function LoopingClip({
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !loadVideo) return;
-    if (!active) {
+    if (!active || !inView) {
       video.pause();
       return;
     }
     if (reduce && !requested) return;
+    if (userPausedRef.current) return;
     void video.play().catch(() => setPaused(true));
-  }, [active, loadVideo, reduce, requested, videoRef]);
+  }, [active, inView, loadVideo, reduce, requested, videoRef]);
 
   useEffect(() => {
     if (!playback) return;
@@ -562,10 +592,11 @@ function LoopingClip({
     let frame = 0;
     let running = false;
     const paint = () => {
+      if (draggingRef.current) return;
       const duration = video.duration;
       const progress = duration && Number.isFinite(duration) ? Math.min(1, Math.max(0, video.currentTime / duration)) : 0;
-      bar.style.transform = `scaleX(${progress})`;
-      bar.parentElement?.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+      setVideoScrub(bar, thumbRef.current, progress);
+      scrubRef.current?.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
     };
     const loop = () => {
       paint();
@@ -603,12 +634,18 @@ function LoopingClip({
     if (!loadVideo) {
       setRequested(true);
       setPaused(false);
+      userPausedRef.current = false;
       return;
     }
     const video = videoRef.current;
     if (!video) return;
-    if (video.paused) void video.play();
-    else video.pause();
+    if (video.paused) {
+      userPausedRef.current = false;
+      void video.play();
+    } else {
+      userPausedRef.current = true;
+      video.pause();
+    }
   };
 
   const toggleMuted = () => {
@@ -619,6 +656,58 @@ function LoopingClip({
     setMuted(next);
   };
 
+  const scrubTo = (clientX: number) => {
+    const video = videoRef.current;
+    const scrub = scrubRef.current;
+    const bar = progressRef.current;
+    if (!video || !scrub || !bar) return;
+    const duration = video.duration;
+    if (!duration || !Number.isFinite(duration)) return;
+    const rect = scrub.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const progress = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    setVideoScrub(bar, thumbRef.current, progress);
+    scrub.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+    video.currentTime = progress * duration;
+  };
+
+  const onScrubDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const duration = videoRef.current?.duration;
+    if (!loadVideo && !(duration && Number.isFinite(duration))) {
+      setRequested(true);
+      return;
+    }
+    draggingRef.current = true;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    scrubTo(event.clientX);
+  };
+
+  const onScrubMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    scrubTo(event.clientX);
+  };
+
+  const onScrubEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    scrubTo(event.clientX);
+    draggingRef.current = false;
+  };
+
+  const onScrubKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const video = videoRef.current;
+    if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
+    const step = event.shiftKey ? 10 : 5;
+    let next = video.currentTime;
+    if (event.key === "ArrowRight" || event.key === "ArrowUp") next += step;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowDown") next -= step;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = video.duration;
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
+    video.currentTime = Math.min(video.duration, Math.max(0, next));
+  };
+
   const replay = () => {
     if (!loadVideo) {
       setRequested(true);
@@ -627,6 +716,7 @@ function LoopingClip({
     }
     const video = videoRef.current;
     if (!video) return;
+    userPausedRef.current = false;
     video.currentTime = 0;
     void video.play().catch(() => setPaused(true));
   };
@@ -636,8 +726,9 @@ function LoopingClip({
       <video
         ref={videoRef}
         poster={posterSrc(src)}
-        className="aspect-video w-full object-cover"
-        autoPlay={!reduce}
+        className={frame ? "w-full object-contain" : "aspect-video w-full object-cover"}
+        style={frame ? { aspectRatio: frame } : undefined}
+        autoPlay={!reduce && !playInView}
         loop
         muted={muted}
         playsInline
@@ -646,14 +737,25 @@ function LoopingClip({
       />
       {playback ? (
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-[8] h-[5px]"
-          role="progressbar"
-          aria-label="Prototype progress"
+          ref={scrubRef}
+          className="cs-clip-scrub"
+          role="slider"
+          tabIndex={0}
+          aria-label="Video progress"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={0}
+          aria-orientation="horizontal"
+          onPointerDown={onScrubDown}
+          onPointerMove={onScrubMove}
+          onPointerUp={onScrubEnd}
+          onPointerCancel={onScrubEnd}
+          onKeyDown={onScrubKeyDown}
         >
-          <span ref={progressRef} className="block h-full w-full origin-left bg-[#b5b3b1]" style={{ transform: "scaleX(0)" }} />
+          <span className="cs-clip-scrub-track">
+            <span ref={progressRef} className="cs-progress-fill block h-full w-full bg-[#b5b3b1]" style={{ clipPath: "inset(0 100% 0 0)" }} />
+          </span>
+          <span ref={thumbRef} className="cs-clip-scrub-thumb" />
         </div>
       ) : null}
       <div className="cs-clip-controls" data-open={paused || (sound && !muted) ? "true" : undefined}>
@@ -789,7 +891,7 @@ function SolutionCarousel({ items }: { items: NonNullable<StudyLayout["solutions
             {items.map((slide, slideIndex) => (
               <div
                 key={slide.title}
-                className="w-full shrink-0"
+                className="flex w-full shrink-0"
                 aria-hidden={slideIndex !== index}
                 inert={slideIndex !== index}
               >
@@ -800,6 +902,9 @@ function SolutionCarousel({ items }: { items: NonNullable<StudyLayout["solutions
                       alt={slide.title}
                       sound={slide.sound}
                       active={slideIndex === index}
+                      frame={slide.frame}
+                      playback={slide.playback}
+                      playInView
                     />
                   ) : (
                     <figure className="m-0 overflow-hidden">
@@ -813,7 +918,7 @@ function SolutionCarousel({ items }: { items: NonNullable<StudyLayout["solutions
                     </figure>
                   )
                 ) : (
-                  <MediaSlot label="Image" />
+                  <MediaSlot label="Image" className="h-full w-full" />
                 )}
               </div>
             ))}
@@ -974,6 +1079,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
     ...leadSections.filter((section) => section.id !== "background" || layout?.backgroundTitle),
     ...(layout?.solutions?.length ? [{ id: "solution", label: "Solution" }] : []),
     ...(layout?.research ? [{ id: "research", label: "Research" }] : []),
+    ...(layout?.synthesis ? [{ id: "synthesis", label: "Synthesis" }] : []),
     ...tailSections.map((section) =>
       section.id === "impact" && layout?.impactLabel ? { ...section, label: layout.impactLabel } : section,
     ),
@@ -1230,7 +1336,7 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
             {layout.problemTitle}
           </h2>
           <p className="mb-5 font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.problemBody}</p>
-          <div className={`rounded-xl border p-8${editorial ? " cs-spotlight border-[#1e1a15]/[0.08] bg-white" : " border-[#0066cc]/10 bg-[#0066cc]/[0.04]"}`}>
+          <div className={`cs-challenge rounded-xl border p-8${editorial ? " cs-spotlight border-[#1e1a15]/[0.08] bg-white" : " border-[#0066cc]/10 bg-[#0066cc]/[0.04]"}`}>
             <p className="mb-3 flex items-center gap-2.5 font-mono text-[12px] font-medium tracking-normal text-[#5a5248]">
               {layout.northStarLabel ? null : (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1396,6 +1502,19 @@ export function RoommateCaseStudy({ study }: { study: CaseStudy }) {
                 ) : null}
               </div>
             ))}
+          </section>
+        ) : null}
+
+        {layout.synthesis ? (
+          <section id="synthesis" className="mb-20 scroll-mt-8">
+            <p className={`cs-section-label mb-5 font-mono text-[14px] font-medium tracking-normal ${active === "synthesis" ? "text-[var(--brand)]" : "text-[#8a8a8a]"}`}>
+              Synthesis
+            </p>
+            <h2 className="mb-6 font-sans text-[clamp(28px,3.5vw,36px)] font-medium leading-[1.15] tracking-[-0.035em]">
+              {layout.synthesis.title}
+            </h2>
+            <p className="font-sans text-[17px] leading-[1.65] text-[#404040]">{layout.synthesis.body}</p>
+            <InformationArchitecture />
           </section>
         ) : null}
 

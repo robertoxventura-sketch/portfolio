@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 
 const COLUMNS = [
   "Visual Impairment Conditions",
@@ -115,7 +115,15 @@ function sameView(a: View, b: View) {
   return Math.abs(a.zoom - b.zoom) < 0.004 && Math.abs(a.x - b.x) < 0.75 && Math.abs(a.y - b.y) < 0.75;
 }
 
-export function InterviewExplorer() {
+function FindingsBoard({
+  label,
+  worldClassName,
+  children,
+}: {
+  label: string;
+  worldClassName?: string;
+  children: ReactNode;
+}) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const worldSize = useRef<Size>({ w: 1120, h: 920 });
@@ -274,7 +282,7 @@ export function InterviewExplorer() {
       <div
         className={`ix-frame${ready ? " is-ready" : ""}${grabbing ? " is-grabbing" : ""}`}
         role="region"
-        aria-label="Interview findings map"
+        aria-label={label}
         onKeyDown={onKeyDown}
       >
         <div
@@ -287,24 +295,10 @@ export function InterviewExplorer() {
         >
           <div
             ref={worldRef}
-            className="ix-world"
+            className={`ix-world${worldClassName ? ` ${worldClassName}` : ""}`}
             style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})` }}
           >
-            {COLUMNS.map((label) => (
-              <div key={label} className="ix-colhead">
-                {label}
-              </div>
-            ))}
-            {PARTICIPANTS.map((person) =>
-              person.notes.map((note) => (
-                <div key={`${person.id}-${note.title}`} className="ix-card">
-                  <span className="ix-card-who">{person.label}</span>
-                  <span className="ix-card-title">{note.title}</span>
-                  {note.subtitle ? <span className="ix-card-sub">{note.subtitle}</span> : null}
-                  <span className="ix-card-body">{note.body}</span>
-                </div>
-              )),
-            )}
+            {children}
           </div>
           <div className="ix-chrome">
             <div className="ix-zoom" role="group" aria-label="Zoom">
@@ -351,5 +345,61 @@ export function InterviewExplorer() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function InterviewExplorer() {
+  return (
+    <FindingsBoard label="Interview findings map">
+      {COLUMNS.map((label) => (
+        <div key={label} className="ix-colhead">
+          {label}
+        </div>
+      ))}
+      {PARTICIPANTS.map((person) =>
+        person.notes.map((note) => (
+          <div key={`${person.id}-${note.title}`} className="ix-card">
+            <span className="ix-card-who">{person.label}</span>
+            <span className="ix-card-title">{note.title}</span>
+            {note.subtitle ? <span className="ix-card-sub">{note.subtitle}</span> : null}
+            <span className="ix-card-body">{note.body}</span>
+          </div>
+        )),
+      )}
+    </FindingsBoard>
+  );
+}
+
+const ARCHITECTURE = [
+  { title: "Onboarding", items: ["Survey", "Profile Setup", "Account Verification", "Identity Verification"] },
+  { title: "Feed", items: ["Candidate Profiles", "Manage Users"] },
+  { title: "Messaging", items: ["Chat Boxes", "Message Users"] },
+  { title: "Account", items: ["Edit Profile", "Security", "Settings"] },
+] as const;
+
+export function InformationArchitecture() {
+  return (
+    <FindingsBoard label="PadPal information architecture" worldClassName="is-ia">
+      <div className="ia">
+        <div className="ia-node is-filled">Sign In / Sign Up</div>
+        <span className="ia-link" />
+        <div className="ia-node is-filled">Home</div>
+        <div className="ia-fork">
+          <div className="ia-cols">
+            {ARCHITECTURE.map((branch) => (
+              <div key={branch.title} className="ia-col">
+                <div className="ia-node is-filled">{branch.title}</div>
+                {branch.items.map((item) => (
+                  <div key={item} className="ia-step">
+                    <span className="ia-link" />
+                    <div className="ia-node">{item}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </FindingsBoard>
   );
 }

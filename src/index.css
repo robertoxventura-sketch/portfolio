@@ -187,8 +187,45 @@ body {
 }
 
 .cs-padpal {
-  --brand: #4285f4;
-  --brand-ring: rgba(66, 133, 244, 0.45);
+  --brand: #6babce;
+  --brand-ring: rgba(107, 171, 206, 0.45);
+}
+
+.cs-padpal .cs-progress-fill {
+  background-color: transparent;
+  background-image: linear-gradient(
+    90deg,
+    #6babce 0%,
+    #7cb0c8 15%,
+    #8eb6c2 30%,
+    #a1babe 45%,
+    #b4bfb7 60%,
+    #c8c6b1 75%,
+    #dac9ab 90%,
+    #dfcbaa 100%
+  );
+}
+
+.cs-padpal .cs-challenge {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(
+      90deg,
+      #6babce 0%,
+      #7cb0c8 15%,
+      #8eb6c2 30%,
+      #a1babe 45%,
+      #b4bfb7 60%,
+      #c8c6b1 75%,
+      #dac9ab 90%,
+      #dfcbaa 100%
+    ) border-box;
+}
+
+.cs-padpal .cs-challenge.cs-spotlight:hover {
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .cs-tokyo {
@@ -726,6 +763,7 @@ body {
 }
 
 .cs-padpal .cs-section-label {
+  color: #6babce;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -771,6 +809,52 @@ body {
 
 .cs-tokyo #research > div + div {
   margin-top: 112px;
+}
+
+.cs-clip-scrub {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 8;
+  display: flex;
+  align-items: flex-end;
+  height: 20px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.cs-clip-scrub:active {
+  cursor: grabbing;
+}
+
+.cs-clip-scrub:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: -2px;
+}
+
+.cs-clip-scrub-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.cs-clip-scrub-thumb {
+  position: absolute;
+  bottom: 2.5px;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, 50%);
+  pointer-events: none;
+}
+
+.cs-clip:has(.cs-clip-scrub) .cs-clip-controls {
+  bottom: 22px;
 }
 
 .cs-clip-controls {
@@ -1415,6 +1499,133 @@ body {
   padding: 0 12px;
   font-size: 14px;
   font-weight: 600;
+}
+
+.ix-world.is-ia {
+  display: block;
+  width: 860px;
+  padding: 36px 28px 48px;
+}
+
+.ia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ia-fork {
+  position: relative;
+  margin-top: 28px;
+}
+
+.ia-fork::before {
+  content: "";
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  width: 2px;
+  height: 28px;
+  background: #6babce;
+  transform: translateX(-50%);
+}
+
+.ia-cols {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 176px);
+  gap: 22px;
+}
+
+.ia-cols::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 88px;
+  right: 88px;
+  height: 2px;
+  background: #6babce;
+}
+
+.ia-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ia-col > .ia-node:first-child {
+  margin-top: 28px;
+}
+
+.ia-col::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 22px;
+  background: #6babce;
+  transform: translateX(-50%);
+}
+
+.ia-col::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  border-top: 6px solid #6babce;
+}
+
+.ia-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ia-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 176px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid #6babce;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e1a15;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.ia-node.is-filled {
+  background: #6babce;
+  color: #fff;
+}
+
+.ia-link {
+  position: relative;
+  width: 2px;
+  height: 22px;
+  background: #6babce;
+}
+
+.ia-link::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -1px);
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  border-top: 6px solid #6babce;
 }
 
 @media (prefers-reduced-motion: reduce) {
